@@ -1,732 +1,935 @@
 import re
-import numpy as np
+from io import BytesIO
+from pathlib import Path
+from typing import List, Optional, Tuple
+
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
+import plotly.io as pio
 import streamlit as st
 
+
+# =========================================================
+# CONFIG
+# =========================================================
 st.set_page_config(
-    page_title="Santos Populares 2026 — Lisboa",
-    page_icon="🎊",
+    page_title="Santos Populares 2026",
+    page_icon="🎉",
     layout="wide",
     initial_sidebar_state="expanded",
 )
 
-PALETTE = {
-    "bg": "#F3EFE7",
-    "surface": "#FFFFFF",
-    "text": "#111827",
-    "muted": "#4B5563",
-    "line": "rgba(17,24,39,0.12)",
-    "primary": "#0F766E",
-    "secondary": "#B45309",
-    "accent": "#1D4ED8",
-}
+pio.templates.default = "plotly"
 
-st.markdown(f"""
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@600;700&family=Inter:wght@400;500;600;700;800&display=swap');
 
-:root {{
-    --bg: {PALETTE['bg']};
-    --card: {PALETTE['surface']};
-    --ink: {PALETTE['text']};
-    --muted: {PALETTE['muted']};
-    --line: {PALETTE['line']};
-    --primary: {PALETTE['primary']};
-    --secondary: {PALETTE['secondary']};
-    --accent: {PALETTE['accent']};
-    --shadow: 0 10px 28px rgba(17,24,39,0.06);
-    --radius-xl: 28px;
-    --radius-lg: 22px;
-    --radius-md: 18px;
-}}
-
-.stApp {{
-    background: var(--bg);
-    color: var(--ink);
-}}
-
-html, body, [class*="css"] {{
-    font-family: 'Inter', sans-serif;
-}}
-
-h1, h2, h3 {{
-    font-family: 'Source Serif 4', serif;
-    color: var(--ink);
-    letter-spacing: -0.02em;
-}}
-
-.block-container {{
-    max-width: 1450px;
-    padding-top: 1.8rem;
-    padding-bottom: 2rem;
-}}
-
-[data-testid="stSidebar"] {{
-    background: #FFFFFF;
-    border-right: 1px solid var(--line);
-}}
-
-[data-testid="stSidebar"] .stMarkdown,
-[data-testid="stSidebar"] label,
-[data-testid="stSidebar"] p,
-[data-testid="stSidebar"] span,
-[data-testid="stSidebar"] div {{
-    color: var(--ink);
-}}
-
-[data-testid="stSidebar"] [data-baseweb="select"] * {{
-    color: #FFFFFF !important;
-    fill: #FFFFFF !important;
-}}
-
-[data-testid="stSidebar"] [data-baseweb="select"] > div {{
-    background: #111827 !important;
-    border-radius: 20px !important;
-    border: none !important;
-}}
-
-[data-testid="stSidebar"] input {{
-    color: #FFFFFF !important;
-    -webkit-text-fill-color: #FFFFFF !important;
-}}
-
-[data-testid="stSidebar"] [data-baseweb="input"] input {{
-    color: #FFFFFF !important;
-    -webkit-text-fill-color: #FFFFFF !important;
-}}
-
-[data-testid="stSidebar"] svg {{
-    color: #FFFFFF !important;
-    fill: #FFFFFF !important;
-}}
-
-.hero,
-.metric-card,
-.info-box,
-.chart-shell {{
-    background: var(--card);
-    border: 1px solid var(--line);
-    box-shadow: var(--shadow);
-}}
-
-.hero {{
-    border-radius: var(--radius-xl);
-    padding: 1.4rem;
-    margin-bottom: 1rem;
-}}
-
-.hero-kicker {{
-    display: inline-block;
-    margin-bottom: 0.6rem;
-    color: var(--primary);
-    font-size: 0.8rem;
-    font-weight: 800;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-}}
-
-.hero-title {{
-    margin: 0;
-    font-size: clamp(2.1rem, 3vw, 3.8rem);
-    line-height: 0.98;
-}}
-
-.hero-subtitle {{
-    color: var(--muted);
-    margin-top: 0.55rem;
-    font-size: 1rem;
-    max-width: 68ch;
-}}
-
-.badges {{
-    margin-top: 1rem;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.55rem;
-}}
-
-.badge {{
-    background: #FFFFFF;
-    border: 1px solid var(--line);
-    color: var(--ink);
-    border-radius: 999px;
-    padding: 0.45rem 0.75rem;
-    font-size: 0.88rem;
-    font-weight: 600;
-}}
-
-.metric-card {{
-    border-radius: var(--radius-lg);
-    padding: 1rem;
-    min-height: 155px;
-}}
-
-.metric-label {{
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    font-size: 0.78rem;
-    font-weight: 800;
-}}
-
-.metric-value {{
-    color: var(--ink);
-    font-weight: 800;
-    font-size: clamp(1.9rem, 2.3vw, 3rem);
-    line-height: 1.0;
-    margin-top: 0.35rem;
-}}
-
-.metric-foot {{
-    color: var(--muted);
-    margin-top: 0.45rem;
-    font-size: 0.92rem;
-}}
-
-.info-box {{
-    border-radius: var(--radius-md);
-    padding: 0.95rem 1rem;
-    color: var(--ink);
-    margin-top: 0.85rem;
-}}
-
-.chart-shell {{
-    border-radius: var(--radius-lg);
-    padding: 0.9rem 0.95rem 0.35rem 0.95rem;
-    margin-bottom: 1rem;
-}}
-
-.chart-title {{
-    color: var(--ink);
-    font-size: 1.35rem;
-    font-weight: 800;
-    line-height: 1.1;
-    margin: 0 0 0.4rem 0;
-}}
-
-div[data-testid="stDataFrame"] {{
-    border: 1px solid var(--line);
-    border-radius: 18px;
-    overflow: hidden;
-    background: white;
-}}
-
-.stDownloadButton > button,
-.stButton > button {{
-    background: var(--ink);
-    color: white;
-    border: none;
-    border-radius: 999px;
-    padding: 0.68rem 1rem;
-    font-weight: 700;
-}}
-
-.stDownloadButton > button:hover,
-.stButton > button:hover {{
-    background: #000000;
-}}
-
-</style>
-""", unsafe_allow_html=True)
-
-MONTHS_PT = {
-    "janeiro": 1, "fevereiro": 2, "março": 3, "marco": 3, "abril": 4,
-    "maio": 5, "junho": 6, "julho": 7, "agosto": 8, "setembro": 9,
-    "outubro": 10, "novembro": 11, "dezembro": 12,
-}
-DAY_ORDER = [
-    "segunda-feira", "terça-feira", "quarta-feira", "quinta-feira",
-    "sexta-feira", "sábado", "domingo"
+# =========================================================
+# THEME
+# =========================================================
+CHART_SEQ = [
+    "#8F2D14",
+    "#B45A1B",
+    "#C88A3D",
+    "#6E7F3B",
+    "#2F6F73",
+    "#5B4A3F",
 ]
-MONTH_LABELS = {5: "Maio", 6: "Junho"}
+
+CHART_SCALE = ["#F3E4D1", "#D7A45B", "#B45A1B", "#8F2D14"]
 
 
-def normalize_text(x):
-    if pd.isna(x):
-        return pd.NA
-    s = str(x).replace("\r", "\n").strip()
-    s = re.sub(r"[ \t]+", " ", s)
-    return s if s else pd.NA
-
-
-def parse_pt_date(text):
-    if pd.isna(text):
-        return pd.NaT
-    s = str(text).strip().lower()
-    s = re.sub(r"\(.*?\)", "", s).strip()
-    m = re.search(r"(\d{1,2})\s+de\s+([a-zçãé]+)", s)
-    if not m:
-        return pd.NaT
-    day = int(m.group(1))
-    month = MONTHS_PT.get(m.group(2))
-    if not month:
-        return pd.NaT
-    return pd.Timestamp(year=2026, month=month, day=day)
-
-
-def clean_local_name(s):
-    s = str(s).strip().replace("Maritímo", "Marítimo")
-    return re.sub(r"\s+", " ", s)
-
-
-def split_multiline_events(value):
-    if pd.isna(value):
-        return []
-    txt = str(value).replace("\r", "\n")
-    parts = []
-    for line in txt.split("\n"):
-        line = line.strip().strip("-").strip()
-        if not line or line in {".", "-"}:
-            continue
-        parts.append(line)
-    return parts
-
-
-def classify_entry(name):
-    txt = str(name).strip().lower()
-    keys = [
-        "marchas", "tributo", "show", "dj", "set", "grande noite",
-        "sagres", "sons ", "rádio", "radio", "revelar", "pimbamix"
-    ]
-    return "Especial" if any(k in txt for k in keys) else "Concerto"
-
-
-def intensity_label(events_count):
-    if events_count >= 4:
-        return "Muito alta"
-    if events_count == 3:
-        return "Alta"
-    if events_count == 2:
-        return "Média"
-    return "Pontual"
-
-
-def apply_clean_theme(fig):
-    fig.update_layout(
-        paper_bgcolor=PALETTE["surface"],
-        plot_bgcolor=PALETTE["surface"],
-        font=dict(family="Inter, sans-serif", color=PALETTE["text"], size=14),
-        margin=dict(l=28, r=28, t=34, b=52),
-        legend=dict(
-            orientation="h",
-            yanchor="bottom",
-            y=1.02,
-            xanchor="left",
-            x=0,
-            font=dict(size=13, color=PALETTE["text"]),
-            bgcolor="rgba(255,255,255,0.96)",
-            bordercolor="rgba(17,24,39,0.10)",
-            borderwidth=1,
-        ),
-    )
-    fig.update_xaxes(
-        showgrid=True,
-        gridcolor=PALETTE["line"],
-        zeroline=False,
-        title_font=dict(size=14, color=PALETTE["muted"]),
-        tickfont=dict(size=12, color=PALETTE["text"]),
-    )
-    fig.update_yaxes(
-        showgrid=True,
-        gridcolor=PALETTE["line"],
-        zeroline=False,
-        title_font=dict(size=14, color=PALETTE["muted"]),
-        tickfont=dict(size=12, color=PALETTE["text"]),
-    )
-    return fig
-
-
-def metric_card(label, value, foot):
+def inject_css():
     st.markdown(
-        f"""
-        <div class='metric-card'>
-            <div class='metric-label'>{label}</div>
-            <div class='metric-value'>{value}</div>
-            <div class='metric-foot'>{foot}</div>
-        </div>
+        """
+        <style>
+        :root {
+            --bg: #f2eee6;
+            --card: #ffffff;
+            --card-2: #fffaf3;
+            --ink: #111111;
+            --muted: #3f3f46;
+            --soft: #5f5f67;
+            --line: #cfc5b6;
+            --accent: #8f2d14;
+            --accent-2: #b86a1f;
+            --shadow: 0 10px 30px rgba(17, 17, 17, 0.08);
+            --radius: 18px;
+        }
+
+        .stApp {
+            background: var(--bg);
+        }
+
+        .block-container {
+            padding-top: 2rem;
+            padding-bottom: 2rem;
+            max-width: 1500px;
+        }
+
+        .hero-wrap {
+            background: #fffaf4;
+            border: 1px solid var(--line);
+            border-radius: 28px;
+            padding: 1.6rem 1.6rem 1.2rem 1.6rem;
+            box-shadow: var(--shadow);
+            margin-bottom: 1.25rem;
+        }
+
+        .eyebrow {
+            display: inline-block;
+            font-size: 0.82rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--accent);
+            font-weight: 800;
+            margin-bottom: 0.6rem;
+        }
+
+        .hero-title {
+            font-size: clamp(1.8rem, 3vw, 3.4rem);
+            line-height: 1.05;
+            font-weight: 900;
+            color: var(--ink);
+            margin: 0 0 0.55rem 0;
+        }
+
+        .hero-subtitle {
+            color: var(--muted);
+            font-size: 1.02rem;
+            max-width: 78ch;
+            margin-bottom: 0.4rem;
+            font-weight: 500;
+        }
+
+        .section-label {
+            font-size: 0.94rem;
+            font-weight: 900;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin: 1rem 0 0.8rem;
+        }
+
+        .metric-card {
+            background: var(--card);
+            border: 1px solid var(--line);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 1rem 1rem 0.9rem 1rem;
+            min-height: 132px;
+        }
+
+        .metric-label {
+            color: var(--soft);
+            font-size: 0.84rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 800;
+            margin-bottom: 0.45rem;
+        }
+
+        .metric-value {
+            font-size: clamp(1.5rem, 2.3vw, 2.4rem);
+            line-height: 1;
+            font-weight: 900;
+            color: var(--ink);
+            margin-bottom: 0.35rem;
+        }
+
+        .metric-note {
+            color: var(--muted);
+            font-size: 0.94rem;
+            font-weight: 500;
+        }
+
+        .insight-card {
+            background: var(--card-2);
+            border: 1px solid var(--line);
+            border-radius: 18px;
+            padding: 1rem 1rem 0.9rem 1rem;
+            height: 100%;
+        }
+
+        .insight-title {
+            font-size: 0.9rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: var(--accent);
+            margin-bottom: 0.35rem;
+        }
+
+        .insight-body {
+            color: var(--ink);
+            font-size: 0.98rem;
+            line-height: 1.45;
+            font-weight: 500;
+        }
+
+        div[data-testid="stDataFrame"] {
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            overflow: hidden;
+            background: #ffffff;
+        }
+
+        [data-testid="stDataFrame"] div {
+            font-size: 14px !important;
+        }
+
+        label, .stSelectbox label, .stDateInput label, .stMultiSelect label {
+            color: var(--ink) !important;
+            font-weight: 700 !important;
+        }
+
+        .stCaption, [data-testid="stCaptionContainer"] {
+            color: var(--muted) !important;
+        }
+
+        .stAlert {
+            color: #111 !important;
+        }
+
+        h1, h2, h3, h4, h5, h6, p, li, span, div {
+            color: inherit;
+        }
+        </style>
         """,
         unsafe_allow_html=True,
     )
 
 
-def chart_box_open(title):
-    st.markdown(f"<div class='chart-shell'><div class='chart-title'>{title}</div>", unsafe_allow_html=True)
+def apply_readable_chart_style(fig):
+    fig.update_layout(
+        paper_bgcolor="#ffffff",
+        plot_bgcolor="#ffffff",
+        font=dict(color="#111111", size=13),
+        title=dict(font=dict(size=20, color="#111111")),
+        legend=dict(
+            title=dict(font=dict(color="#111111")),
+            font=dict(color="#111111"),
+            bgcolor="rgba(255,255,255,0.92)"
+        ),
+        margin=dict(l=20, r=20, t=70, b=20),
+    )
+
+    fig.update_xaxes(
+        title_font=dict(color="#111111", size=14),
+        tickfont=dict(color="#111111", size=12),
+        showgrid=True,
+        gridcolor="rgba(17,17,17,0.10)",
+        zeroline=False,
+        linecolor="rgba(17,17,17,0.35)"
+    )
+
+    fig.update_yaxes(
+        title_font=dict(color="#111111", size=14),
+        tickfont=dict(color="#111111", size=12),
+        showgrid=True,
+        gridcolor="rgba(17,17,17,0.10)",
+        zeroline=False,
+        linecolor="rgba(17,17,17,0.35)"
+    )
+    return fig
 
 
-def chart_box_close():
-    st.markdown("</div>", unsafe_allow_html=True)
+inject_css()
 
 
-@st.cache_data(ttl=3600)
-def load_data():
-    raw = pd.read_excel("data/santos.xlsx", header=None)
-    header_idx = raw.index[raw.iloc[:, 0].astype(str).str.strip().eq("Dia")][0]
-    df = raw.iloc[header_idx:].copy()
-    df.columns = df.iloc[0]
-    df = df.iloc[1:].reset_index(drop=True)
-    df = df.rename(columns={"Dia": "dia_raw", "Dia da Semana": "dia_semana"})
-    df = df.dropna(axis=1, how="all")
+# =========================================================
+# CONSTANTS
+# =========================================================
+MESES_PT = {
+    "Janeiro": 1,
+    "Fevereiro": 2,
+    "Março": 3,
+    "Abril": 4,
+    "Maio": 5,
+    "Junho": 6,
+    "Julho": 7,
+    "Agosto": 8,
+    "Setembro": 9,
+    "Outubro": 10,
+    "Novembro": 11,
+    "Dezembro": 12,
+}
 
-    for col in df.columns:
-        df[col] = df[col].apply(normalize_text)
-
-    df["data"] = df["dia_raw"].apply(parse_pt_date)
-    df["mes"] = df["data"].dt.month
-    df["dia_mes"] = df["data"].dt.day
-
-    id_cols = ["dia_raw", "dia_semana", "data", "mes", "dia_mes"]
-    local_cols = [c for c in df.columns if c not in id_cols]
-
-    long_df = df.melt(id_vars=id_cols, value_vars=local_cols, var_name="local", value_name="evento_raw")
-    long_df["local"] = long_df["local"].apply(clean_local_name)
-    long_df["evento_raw"] = long_df["evento_raw"].replace(["", ".", "-", "nan", "None"], pd.NA)
-    long_df = long_df.dropna(subset=["evento_raw", "data"]).copy()
-
-    long_df["evento_lista"] = long_df["evento_raw"].apply(split_multiline_events)
-    long_df = long_df.explode("evento_lista").copy()
-    long_df["evento_lista"] = long_df["evento_lista"].apply(normalize_text)
-    long_df = long_df.dropna(subset=["evento_lista"])
-
-    long_df["artista"] = long_df["evento_lista"]
-    long_df["tipo_evento"] = long_df["artista"].apply(classify_entry)
-    long_df["local_curto"] = long_df["local"].str.replace(r"\s*\(.*?\)", "", regex=True)
-    long_df["feriado"] = long_df["dia_raw"].astype(str).str.contains("Feriado", case=False, na=False)
-    long_df["fim_semana"] = long_df["dia_semana"].isin(["sábado", "domingo"])
-    long_df["contexto"] = np.where(long_df["feriado"], "Feriado", np.where(long_df["fim_semana"], "Fim de semana", "Semana"))
-
-    per_day = long_df.groupby("data").size().reset_index(name="n_eventos_dia")
-    per_day["intensidade"] = per_day["n_eventos_dia"].apply(intensity_label)
-    long_df = long_df.merge(per_day, on="data", how="left")
-
-    return long_df.sort_values(["data", "local", "artista"]).reset_index(drop=True)
+DIAS_SEMANA_PT = {
+    "Monday": "segunda-feira",
+    "Tuesday": "terça-feira",
+    "Wednesday": "quarta-feira",
+    "Thursday": "quinta-feira",
+    "Friday": "sexta-feira",
+    "Saturday": "sábado",
+    "Sunday": "domingo",
+}
 
 
-df = load_data()
-if df.empty:
-    st.error("Não foi possível ler eventos do ficheiro santos.xlsx.")
-    st.stop()
+# =========================================================
+# HELPERS
+# =========================================================
+def normalize_text(value) -> str:
+    if pd.isna(value):
+        return ""
+    txt = str(value)
+    txt = txt.replace("\r", "\n")
+    txt = re.sub(r"[ \t]+", " ", txt)
+    return txt.strip()
 
-headliners = ", ".join(df["artista"].value_counts().head(5).index.tolist())
-start_date = df["data"].min().strftime("%d/%m")
-end_date = df["data"].max().strftime("%d/%m")
 
+def parse_date_label(label: str) -> Optional[pd.Timestamp]:
+    label = normalize_text(label)
+    label = label.replace("(Feriado)", "").replace("Feriado", "").strip()
+
+    match = re.search(r"(\d{1,2})\s+de\s+([A-Za-zÀ-ÿ]+)", label, re.IGNORECASE)
+    if not match:
+        return None
+
+    dia = int(match.group(1))
+    mes_nome = match.group(2).capitalize()
+    mes = MESES_PT.get(mes_nome)
+    if not mes:
+        return None
+
+    return pd.Timestamp(year=2026, month=mes, day=dia)
+
+
+def classify_event(name: str) -> str:
+    n = normalize_text(name).lower()
+
+    if any(x in n for x in ["marcha", "marchas"]):
+        return "Marchas"
+    if any(x in n for x in ["dj", "set", "over the rule", "is hot"]):
+        return "DJ / Club"
+    if "tributo" in n:
+        return "Tributo"
+    if any(x in n for x in ["pimba", "barreiros", "rossi", "azevedo", "ruth marlene", "toy", "rosinha"]):
+        return "Popular / Pimba"
+    if any(x in n for x in ["banda", "show"]):
+        return "Concerto"
+    if any(x in n for x in ["sagres", "mega santos", "revelar", "rádio 105.4"]):
+        return "Ativação / Marca"
+    return "Espetáculo"
+
+
+def split_multiline_cell(value: str) -> List[str]:
+    txt = normalize_text(value)
+    if not txt or txt in {".", "-", "—"}:
+        return []
+
+    lines = [line.strip() for line in txt.split("\n") if line.strip()]
+    cleaned = []
+
+    if len(lines) > 1:
+        for line in lines:
+            line = re.sub(r"^[\-\–\—•]+\s*", "", line).strip()
+            if line and line not in {".", "-", "—"}:
+                cleaned.append(line)
+        return cleaned
+
+    single = re.sub(r"^[\-\–\—•]+\s*", "", txt).strip()
+    if not single or single in {".", "-", "—"}:
+        return []
+
+    return [single]
+
+
+def coerce_date_range(date_input_value, min_date, max_date) -> Tuple:
+    if isinstance(date_input_value, tuple):
+        if len(date_input_value) == 2:
+            return date_input_value[0], date_input_value[1]
+        if len(date_input_value) == 1:
+            return date_input_value[0], date_input_value[0]
+        return min_date, max_date
+    return date_input_value, date_input_value
+
+
+# =========================================================
+# DATA LOADING
+# =========================================================
+@st.cache_data(ttl=3600, show_spinner=False)
+def load_and_prepare_data(file_bytes: bytes):
+    raw = pd.read_excel(BytesIO(file_bytes), header=None, engine="openpyxl")
+
+    header_row = 2
+    headers = [normalize_text(x) for x in raw.iloc[header_row].tolist()]
+    df = raw.iloc[header_row + 1:].copy()
+    df.columns = headers
+    df = df.dropna(how="all").copy()
+
+    df = df.rename(columns={
+        "Dia": "dia",
+        "Dia da Semana": "dia_semana_excel"
+    })
+
+    if "dia" not in df.columns or "dia_semana_excel" not in df.columns:
+        raise ValueError("Não foi possível localizar as colunas 'Dia' e 'Dia da Semana'.")
+
+    df = df.dropna(axis=1, how="all").copy()
+    event_cols = [c for c in df.columns if c not in ["dia", "dia_semana_excel"]]
+
+    long_df = df.melt(
+        id_vars=["dia", "dia_semana_excel"],
+        value_vars=event_cols,
+        var_name="local",
+        value_name="conteudo"
+    )
+
+    long_df["conteudo"] = long_df["conteudo"].apply(normalize_text)
+    long_df = long_df[long_df["conteudo"] != ""].copy()
+    long_df = long_df[~long_df["conteudo"].isin([".", "-", "—"])].copy()
+
+    long_df["data"] = long_df["dia"].apply(parse_date_label)
+    long_df = long_df.dropna(subset=["data"]).copy()
+
+    records = []
+    for _, row in long_df.iterrows():
+        entries = split_multiline_cell(row["conteudo"])
+        for entry in entries:
+            records.append(
+                {
+                    "data": row["data"],
+                    "dia_label": normalize_text(row["dia"]),
+                    "dia_semana_excel": normalize_text(row["dia_semana_excel"]),
+                    "local": normalize_text(row["local"]),
+                    "artista_evento": entry,
+                    "conteudo_original": normalize_text(row["conteudo"]),
+                }
+            )
+
+    events = pd.DataFrame(records)
+
+    if events.empty:
+        return events
+
+    events["mes"] = events["data"].dt.month
+    events["mes_nome"] = events["data"].dt.strftime("%b")
+    events["dia_mes"] = events["data"].dt.day
+    events["dia_semana"] = (
+        events["data"].dt.day_name().map(DIAS_SEMANA_PT).fillna(events["dia_semana_excel"])
+    )
+    events["fim_de_semana"] = events["data"].dt.dayofweek >= 4
+    events["feriado"] = events["dia_label"].str.contains("Feriado", case=False, na=False)
+    events["categoria"] = events["artista_evento"].apply(classify_event)
+
+    counts_by_day = events.groupby("data").size().rename("eventos_no_dia")
+    events = events.merge(counts_by_day, on="data", how="left")
+
+    max_events = int(events["eventos_no_dia"].max()) if not events.empty else 0
+    if max_events <= 2:
+        events["intensidade_dia"] = "Baixa"
+    else:
+        events["intensidade_dia"] = pd.cut(
+            events["eventos_no_dia"],
+            bins=[-1, 2, 5, 999],
+            labels=["Baixa", "Média", "Alta"]
+        ).astype(str)
+
+    return events.sort_values(["data", "local", "artista_evento"]).reset_index(drop=True)
+
+
+# =========================================================
+# HEADER
+# =========================================================
 st.markdown(
-    f"""
-    <div class='hero'>
-        <div class='hero-kicker'>Santos Populares 2026 · Lisboa e arredores</div>
-        <h1 class='hero-title'>Dashboard Santos Populares 2026</h1>
-        <div class='hero-subtitle'>Versão simplificada com contraste forte, leitura limpa e uma paleta curta e coerente para filtros, métricas e gráficos.</div>
-        <div class='badges'>
-            <div class='badge'>{len(df)} eventos modelados</div>
-            <div class='badge'>{df['local_curto'].nunique()} locais</div>
-            <div class='badge'>Período {start_date}–{end_date}</div>
-            <div class='badge'>Destaques: {headliners}</div>
+    """
+    <div class="hero-wrap">
+        <div class="eyebrow">Lisboa + Arredores • Agenda Analítica</div>
+        <div class="hero-title">Santos Populares 2026</div>
+        <div class="hero-subtitle">
+            Dashboard interativo para explorar arraiais, artistas, densidade diária e padrões da programação.
         </div>
     </div>
     """,
     unsafe_allow_html=True,
 )
 
-st.sidebar.markdown("## Filtros")
-st.sidebar.markdown("### Intervalo")
 
-data_inicio = st.sidebar.date_input(
-    "Data início",
-    value=df["data"].min().date(),
-    min_value=df["data"].min().date(),
-    max_value=df["data"].max().date(),
-    key="data_inicio",
-)
+# =========================================================
+# INPUT FILE STRATEGY
+# =========================================================
+candidate_paths = [
+    Path("data/santos.xlsx"),
+    Path("santos.xlsx"),
+    Path("./data/santos.xlsx"),
+]
 
-data_fim = st.sidebar.date_input(
-    "Data fim",
-    value=df["data"].max().date(),
-    min_value=df["data"].min().date(),
-    max_value=df["data"].max().date(),
-    key="data_fim",
-)
+uploaded_file = None
+file_bytes = None
 
-if data_inicio > data_fim:
-    st.sidebar.error("A data de início não pode ser posterior à data de fim.")
+for local_path in candidate_paths:
+    if local_path.exists():
+        file_bytes = local_path.read_bytes()
+        break
+
+if file_bytes is None:
+    uploaded_file = st.file_uploader(
+        "Carregar ficheiro Excel",
+        type=["xlsx"],
+        accept_multiple_files=False,
+        help="Usa o ficheiro `santos.xlsx` para alimentar o dashboard."
+    )
+    if uploaded_file is not None:
+        file_bytes = uploaded_file.getvalue()
+
+if file_bytes is None:
+    st.info("Carrega o ficheiro Excel para visualizar o dashboard.")
     st.stop()
 
-selected_local = st.sidebar.selectbox("Local", ["Todos"] + sorted(df["local_curto"].dropna().unique().tolist()))
-selected_artist = st.sidebar.selectbox("Artista / momento", ["Todos"] + sorted(df["artista"].dropna().unique().tolist()))
-selected_type = st.sidebar.selectbox("Categoria", ["Todos"] + sorted(df["tipo_evento"].dropna().unique().tolist()))
-selected_intensity = st.sidebar.selectbox("Intensidade", ["Todas"] + sorted(df["intensidade"].dropna().unique().tolist()))
-only_holiday = st.sidebar.checkbox("Só feriados")
-only_weekend = st.sidebar.checkbox("Só fins de semana")
 
-mask = (df["data"] >= pd.Timestamp(data_inicio)) & (df["data"] <= pd.Timestamp(data_fim))
-if selected_local != "Todos":
-    mask &= df["local_curto"] == selected_local
-if selected_artist != "Todos":
-    mask &= df["artista"] == selected_artist
-if selected_type != "Todos":
-    mask &= df["tipo_evento"] == selected_type
-if selected_intensity != "Todas":
-    mask &= df["intensidade"] == selected_intensity
-if only_holiday:
+# =========================================================
+# PROCESS FILE
+# =========================================================
+try:
+    df = load_and_prepare_data(file_bytes)
+except Exception as e:
+    st.error("Erro ao ler ou transformar o ficheiro Excel.")
+    st.exception(e)
+    st.stop()
+
+if df.empty:
+    st.error("A extração terminou sem eventos válidos.")
+    st.stop()
+
+
+# =========================================================
+# SIDEBAR
+# =========================================================
+st.sidebar.header("🔎 Filtros")
+
+min_date = df["data"].min().date()
+max_date = df["data"].max().date()
+
+date_range = st.sidebar.date_input(
+    "Intervalo de datas",
+    value=(min_date, max_date),
+    min_value=min_date,
+    max_value=max_date,
+)
+
+data_inicio, data_fim = coerce_date_range(date_range, min_date, max_date)
+
+locais = ["Todos"] + sorted(df["local"].dropna().unique().tolist())
+categorias = ["Todas"] + sorted(df["categoria"].dropna().unique().tolist())
+intensidades = ["Todas"] + sorted(df["intensidade_dia"].dropna().unique().tolist())
+artistas = ["Todos"] + sorted(df["artista_evento"].dropna().unique().tolist())
+
+local_sel = st.sidebar.selectbox("Local / Arraial", locais)
+categoria_sel = st.sidebar.selectbox("Categoria", categorias)
+intensidade_sel = st.sidebar.selectbox("Intensidade do dia", intensidades)
+artista_sel = st.sidebar.selectbox("Artista / Evento", artistas)
+
+apenas_feriados = st.sidebar.checkbox("Só feriados")
+apenas_fim_de_semana = st.sidebar.checkbox("Só sexta a domingo")
+
+mask = (
+    (df["data"] >= pd.Timestamp(data_inicio)) &
+    (df["data"] <= pd.Timestamp(data_fim))
+)
+
+if local_sel != "Todos":
+    mask &= df["local"] == local_sel
+
+if categoria_sel != "Todas":
+    mask &= df["categoria"] == categoria_sel
+
+if intensidade_sel != "Todas":
+    mask &= df["intensidade_dia"] == intensidade_sel
+
+if artista_sel != "Todos":
+    mask &= df["artista_evento"] == artista_sel
+
+if apenas_feriados:
     mask &= df["feriado"]
-if only_weekend:
-    mask &= df["fim_semana"]
 
-fdf = df[mask].copy()
-if fdf.empty:
-    st.warning("Sem resultados para os filtros escolhidos.")
+if apenas_fim_de_semana:
+    mask &= df["data"].dt.dayofweek >= 4
+
+df_filtered = df.loc[mask].copy()
+
+if df_filtered.empty:
+    st.warning("Os filtros atuais não devolvem resultados.")
     st.stop()
 
-peak_day = fdf.groupby("data").size().sort_values(ascending=False).head(1)
-peak_local = fdf["local_curto"].value_counts().head(1)
 
-st.sidebar.markdown("---")
-st.sidebar.markdown("### Resumo")
-st.sidebar.markdown(f"- Dia mais forte: **{peak_day.index[0].strftime('%d/%m')}** ({int(peak_day.iloc[0])} eventos)")
-st.sidebar.markdown(f"- Local dominante: **{peak_local.index[0]}** ({int(peak_local.iloc[0])} eventos)")
-st.sidebar.markdown(f"- Artistas/eventos distintos: **{fdf['artista'].nunique()}**")
+# =========================================================
+# KPIS
+# =========================================================
+total_eventos = len(df_filtered)
+locais_ativos = df_filtered["local"].nunique()
+artistas_unicos = df_filtered["artista_evento"].nunique()
 
-m1, m2, m3, m4 = st.columns(4)
-with m1:
-    metric_card("Eventos", f"{len(fdf):,}".replace(",", "."), "Linhas visíveis no recorte atual")
-with m2:
-    metric_card("Locais", fdf["local_curto"].nunique(), "Arraiais com atividade")
-with m3:
-    metric_card("Artistas", fdf["artista"].nunique(), "Nomes ou momentos únicos")
-with m4:
-    metric_card("Pico diário", int(fdf.groupby("data").size().max()), "Máximo de eventos num único dia")
+dia_top_counts = df_filtered.groupby("data").size().sort_values(ascending=False)
+dia_top = dia_top_counts.index[0] if not dia_top_counts.empty else None
+dia_top_qtd = int(dia_top_counts.iloc[0]) if not dia_top_counts.empty else 0
 
-b1, b2 = st.columns(2)
-with b1:
-    top3 = fdf.groupby("data").size().sort_values(ascending=False).head(3)
-    txt = " · ".join([f"{idx.strftime('%d/%m')} ({int(val)})" for idx, val in top3.items()])
-    st.markdown(f"<div class='info-box'><strong>Noites mais fortes:</strong> {txt}</div>", unsafe_allow_html=True)
-with b2:
-    share = fdf["tipo_evento"].value_counts(normalize=True).mul(100).round(1)
-    txt = " · ".join([f"{k}: {v}%" for k, v in share.items()])
-    st.markdown(f"<div class='info-box'><strong>Mix da programação:</strong> {txt}</div>", unsafe_allow_html=True)
+local_top_counts = df_filtered.groupby("local").size().sort_values(ascending=False)
+local_top = local_top_counts.index[0] if not local_top_counts.empty else "—"
+local_top_qtd = int(local_top_counts.iloc[0]) if not local_top_counts.empty else 0
 
-st.markdown("## Calendário e pulso diário")
-c1, c2 = st.columns(2)
+c1, c2, c3, c4 = st.columns(4)
 
 with c1:
-    chart_box_open("Mapa de calor por dia")
-    base_days = pd.DataFrame({"data": pd.date_range(fdf["data"].min(), fdf["data"].max(), freq="D")})
-    base_days["mes"] = base_days["data"].dt.month
-    base_days["dia_mes"] = base_days["data"].dt.day
-    per_day = fdf.groupby(["mes", "dia_mes"]).size().reset_index(name="eventos")
-    cal = base_days.merge(per_day, on=["mes", "dia_mes"], how="left").fillna({"eventos": 0})
-    heat = cal.pivot(index="dia_mes", columns="mes", values="eventos").fillna(0)
-
-    fig_heat = go.Figure(go.Heatmap(
-        z=heat.values,
-        x=[MONTH_LABELS.get(c, str(c)) for c in heat.columns],
-        y=heat.index,
-        colorscale=[[0.0, "#F8FAFC"], [0.35, "#93C5FD"], [0.65, PALETTE["accent"]], [1.0, PALETTE["text"]]],
-        colorbar=dict(
-            title="Eventos",
-            tickfont=dict(color=PALETTE["text"], size=12),
-            titlefont=dict(color=PALETTE["text"], size=13)
-        ),
-        hovertemplate="Dia %{y}<br>Mês %{x}<br>%{z} eventos<extra></extra>",
-    ))
-    fig_heat.update_layout(xaxis_title="Mês", yaxis_title="Dia do mês", height=390)
-    fig_heat = apply_clean_theme(fig_heat)
-    st.plotly_chart(fig_heat, use_container_width=True)
-    chart_box_close()
+    st.markdown(f"""
+    <div class="metric-card">
+        <div class="metric-label">Eventos visíveis</div>
+        <div class="metric-value">{total_eventos}</div>
+        <div class="metric-note">Linhas após limpeza e filtros.</div>
+    </div>
+    """, unsafe_allow_html=True)
 
 with c2:
-    chart_box_open("Pulso diário da agenda")
-    curve = fdf.groupby("data").size().reset_index(name="eventos")
-    fig_curve = px.line(curve, x="data", y="eventos", markers=True, color_discrete_sequence=[PALETTE["primary"]])
-    fig_curve.update_traces(
-        line=dict(width=3),
-        marker=dict(size=8, color=PALETTE["primary"], line=dict(width=2, color="#FFFFFF"))
-    )
-    fig_curve.update_layout(xaxis_title="Data", yaxis_title="Eventos", height=390, showlegend=False)
-    fig_curve = apply_clean_theme(fig_curve)
-    st.plotly_chart(fig_curve, use_container_width=True)
-    chart_box_close()
-
-st.markdown("## Locais e protagonistas")
-c3, c4 = st.columns(2)
+    st.markdown(f"""
+    <div class="metric-card">
+        <div class="metric-label">Locais ativos</div>
+        <div class="metric-value">{locais_ativos}</div>
+        <div class="metric-note">Arraiais com programação no recorte atual.</div>
+    </div>
+    """, unsafe_allow_html=True)
 
 with c3:
-    chart_box_open("Top locais por volume de eventos")
-    local_rank = (
-        fdf.groupby("local_curto", as_index=False)
-        .size()
-        .rename(columns={"size": "eventos"})
-        .sort_values("eventos", ascending=True)
-        .tail(12)
-    )
-    fig_loc = px.bar(
-        local_rank,
-        x="eventos",
-        y="local_curto",
-        orientation="h",
-        text="eventos",
-        color_discrete_sequence=[PALETTE["secondary"]],
-    )
-    fig_loc.update_traces(textposition="outside", cliponaxis=False, textfont=dict(color=PALETTE['text'], size=13), hovertemplate="%{y}<br>%{x} eventos<extra></extra>")
-    fig_loc.update_layout(xaxis_title="Eventos", yaxis_title="", height=470, showlegend=False, uniformtext_minsize=12, uniformtext_mode='hide')
-    fig_loc = apply_clean_theme(fig_loc)
-    st.plotly_chart(fig_loc, use_container_width=True)
-    chart_box_close()
+    st.markdown(f"""
+    <div class="metric-card">
+        <div class="metric-label">Artistas / atos</div>
+        <div class="metric-value">{artistas_unicos}</div>
+        <div class="metric-note">Entradas únicas identificadas.</div>
+    </div>
+    """, unsafe_allow_html=True)
 
 with c4:
-    chart_box_open("Artistas / momentos mais frequentes")
-    artist_rank = (
-        fdf.groupby("artista", as_index=False)
+    dia_top_txt = dia_top.strftime("%d %b") if dia_top is not None else "—"
+    st.markdown(f"""
+    <div class="metric-card">
+        <div class="metric-label">Pico diário</div>
+        <div class="metric-value">{dia_top_qtd}</div>
+        <div class="metric-note">{dia_top_txt} • dia com maior densidade.</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+
+# =========================================================
+# INSIGHTS
+# =========================================================
+i1, i2, i3 = st.columns(3)
+
+with i1:
+    texto = (
+        f"O dia mais carregado no recorte atual é <b>{dia_top.strftime('%d/%m/%Y')}</b> com <b>{dia_top_qtd}</b> eventos."
+        if dia_top is not None else "Sem dia dominante no recorte atual."
+    )
+    st.markdown(f"""
+    <div class="insight-card">
+        <div class="insight-title">Pressão do calendário</div>
+        <div class="insight-body">{texto}</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+with i2:
+    st.markdown(f"""
+    <div class="insight-card">
+        <div class="insight-title">Local dominante</div>
+        <div class="insight-body"><b>{local_top}</b> concentra <b>{local_top_qtd}</b> entradas no recorte atual.</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+with i3:
+    feriados = int(df_filtered["feriado"].sum())
+    fins = int(df_filtered["fim_de_semana"].sum())
+    st.markdown(f"""
+    <div class="insight-card">
+        <div class="insight-title">Ritmo festivo</div>
+        <div class="insight-body">Há <b>{feriados}</b> eventos em dias marcados como feriado e <b>{fins}</b> entradas entre sexta e domingo.</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+
+# =========================================================
+# SECTION 1
+# =========================================================
+st.markdown('<div class="section-label">Distribuição temporal</div>', unsafe_allow_html=True)
+
+col_a, col_b = st.columns([1.1, 1])
+
+with col_a:
+    heat = (
+        df_filtered
+        .assign(mes_nome=df_filtered["data"].dt.strftime("%b"))
+        .pivot_table(index="dia_mes", columns="mes_nome", values="local", aggfunc="count", fill_value=0)
+    )
+
+    ordem_meses = ["May", "Jun"]
+    heat = heat.reindex(columns=[m for m in ordem_meses if m in heat.columns], fill_value=0)
+
+    if heat.empty:
+        st.info("Sem dados suficientes para desenhar o mapa de calor.")
+    else:
+        fig_heat = go.Figure(
+            data=go.Heatmap(
+                z=heat.values,
+                x=heat.columns.tolist(),
+                y=heat.index.tolist(),
+                colorscale=[
+                    [0.0, "#F7EFE2"],
+                    [0.25, "#E6C48D"],
+                    [0.5, "#D7A45B"],
+                    [0.75, "#B45A1B"],
+                    [1.0, "#8F2D14"],
+                ],
+                zmin=0,
+                zmax=max(1, int(heat.values.max())),
+                hovertemplate="Dia %{y}<br>Mês %{x}<br>%{z} eventos<extra></extra>",
+                colorbar=dict(title="Eventos"),
+            )
+        )
+        fig_heat.update_layout(
+            title="Mapa de calor diário",
+            xaxis_title="Mês",
+            yaxis_title="Dia do mês",
+            yaxis=dict(autorange="reversed"),
+        )
+        fig_heat = apply_readable_chart_style(fig_heat)
+        st.plotly_chart(fig_heat, use_container_width=True, theme=None)
+
+with col_b:
+    daily_series = (
+        df_filtered.groupby("data")
         .size()
-        .rename(columns={"size": "eventos"})
-        .sort_values("eventos", ascending=False)
-        .head(12)
+        .reset_index(name="eventos")
+        .sort_values("data")
     )
-    fig_art = px.bar(
-        artist_rank,
-        x="artista",
-        y="eventos",
-        text="eventos",
-        color_discrete_sequence=[PALETTE["accent"]],
-    )
-    fig_art.update_traces(textposition="outside", cliponaxis=False, textfont=dict(color=PALETTE['text'], size=13), hovertemplate="%{x}<br>%{y} eventos<extra></extra>")
-    fig_art.update_layout(xaxis_title="", yaxis_title="Eventos", height=470, showlegend=False, uniformtext_minsize=12, uniformtext_mode='hide')
-    fig_art.update_xaxes(tickangle=-32)
-    fig_art = apply_clean_theme(fig_art)
-    st.plotly_chart(fig_art, use_container_width=True)
-    chart_box_close()
 
-st.markdown("## Agenda interativa")
-c5, c6 = st.columns([1, 1])
-
-with c5:
-    chart_box_open("Eventos ao longo do tempo")
-    fig_timeline = px.scatter(
-        fdf,
+    fig_daily = px.area(
+        daily_series,
         x="data",
-        y="local_curto",
-        color="tipo_evento",
-        hover_name="artista",
-        hover_data={
-            "data": "|%d/%m/%Y",
-            "dia_semana": True,
-            "tipo_evento": True,
-            "local_curto": False,
-        },
-        color_discrete_map={
-            "Concerto": PALETTE["primary"],
-            "Especial": PALETTE["secondary"],
-        },
+        y="eventos",
+        markers=True,
+        title="Cadência de eventos por dia",
     )
-    fig_timeline.update_traces(marker=dict(size=11, opacity=0.92, line=dict(width=1.2, color="#FFFFFF")))
-    fig_timeline.update_layout(xaxis_title="Data", yaxis_title="Local", height=520, legend_title_text='tipo_evento')
-    fig_timeline = apply_clean_theme(fig_timeline)
-    fig_timeline.update_layout(legend_title_font=dict(color=PALETTE['text'], size=13), legend_font=dict(color=PALETTE['text'], size=13))
-    fig_timeline.update_layout(legend_title_font=dict(color=PALETTE['text'], size=13), legend_font=dict(color=PALETTE['text'], size=13))
-    st.plotly_chart(fig_timeline, use_container_width=True)
-    chart_box_close()
+    fig_daily.update_traces(
+        line=dict(color="#8F2D14", width=3),
+        marker=dict(color="#B45A1B", size=7),
+        fillcolor="rgba(180,90,27,0.28)",
+    )
+    fig_daily.update_layout(
+        xaxis_title="Data",
+        yaxis_title="Eventos",
+    )
+    fig_daily = apply_readable_chart_style(fig_daily)
+    st.plotly_chart(fig_daily, use_container_width=True, theme=None)
 
-with c6:
-    chart_box_open("Composição da agenda")
-    mix = fdf["tipo_evento"].value_counts().reset_index()
-    mix.columns = ["tipo", "n"]
-    fig_mix = px.pie(
-        mix,
-        names="tipo",
-        values="n",
-        hole=0.56,
-        color="tipo",
-        color_discrete_map={
-            "Concerto": PALETTE["primary"],
-            "Especial": PALETTE["secondary"],
-        },
+
+# =========================================================
+# SECTION 2
+# =========================================================
+st.markdown('<div class="section-label">Locais e perfis de programação</div>', unsafe_allow_html=True)
+
+col_c, col_d = st.columns(2)
+
+with col_c:
+    by_local = (
+        df_filtered.groupby("local")
+        .size()
+        .reset_index(name="eventos")
+        .sort_values("eventos", ascending=True)
     )
-    fig_mix.update_traces(
+
+    fig_local = px.bar(
+        by_local,
+        x="eventos",
+        y="local",
+        orientation="h",
+        title="Ranking de arraiais",
+        color="eventos",
+        color_continuous_scale=CHART_SCALE,
+    )
+    fig_local.update_layout(
+        xaxis_title="Nº de eventos",
+        yaxis_title="Local",
+        coloraxis_showscale=False,
+    )
+    fig_local = apply_readable_chart_style(fig_local)
+    st.plotly_chart(fig_local, use_container_width=True, theme=None)
+
+with col_d:
+    by_cat = (
+        df_filtered.groupby("categoria")
+        .size()
+        .reset_index(name="eventos")
+        .sort_values("eventos", ascending=False)
+    )
+
+    fig_cat = px.pie(
+        by_cat,
+        values="eventos",
+        names="categoria",
+        hole=0.55,
+        title="Composição por categoria",
+        color_discrete_sequence=CHART_SEQ,
+    )
+    fig_cat.update_traces(
         textposition="inside",
         textinfo="percent+label",
-        textfont=dict(color="#FFFFFF", size=13),
-        marker=dict(line=dict(color="#FFFFFF", width=2)),
-        hovertemplate="%{label}: %{value} eventos (%{percent})<extra></extra>",
+        textfont=dict(color="#111111", size=12),
+        marker=dict(line=dict(color="#ffffff", width=1.5))
     )
-    fig_mix.update_layout(
-        height=260,
-        margin=dict(l=12, r=12, t=18, b=8),
-        paper_bgcolor=PALETTE["surface"],
-        plot_bgcolor=PALETTE["surface"],
-        font=dict(color=PALETTE["text"]),
-        legend=dict(font=dict(color=PALETTE["text"], size=13)),
+    fig_cat = apply_readable_chart_style(fig_cat)
+    st.plotly_chart(fig_cat, use_container_width=True, theme=None)
+
+
+# =========================================================
+# SECTION 3
+# =========================================================
+st.markdown('<div class="section-label">Movimento ao longo do calendário</div>', unsafe_allow_html=True)
+
+col_e, col_f = st.columns([1.2, 0.8])
+
+with col_e:
+    timeline = df_filtered.copy()
+
+    fig_timeline = px.scatter(
+        timeline,
+        x="data",
+        y="local",
+        color="categoria",
+        hover_data=["artista_evento", "dia_semana"],
+        title="Timeline de programação",
+        color_discrete_sequence=CHART_SEQ,
     )
-    st.plotly_chart(fig_mix, use_container_width=True)
-    chart_box_close()
-
-    chart_box_open("Distribuição por dia da semana")
-    weekday = fdf.groupby("dia_semana", as_index=False).size().rename(columns={"size": "eventos"})
-    weekday["dia_semana"] = pd.Categorical(weekday["dia_semana"], categories=DAY_ORDER, ordered=True)
-    weekday = weekday.sort_values("dia_semana")
-    fig_week = px.bar(
-        weekday,
-        x="dia_semana",
-        y="eventos",
-        text="eventos",
-        color_discrete_sequence=[PALETTE["accent"]],
+    fig_timeline.update_traces(
+        marker=dict(
+            size=14,
+            opacity=0.82,
+            line=dict(width=1, color="rgba(17,17,17,0.35)")
+        )
     )
-    fig_week.update_traces(textposition="outside", cliponaxis=False, textfont=dict(color=PALETTE['text'], size=13))
-    fig_week.update_layout(xaxis_title="", yaxis_title="Eventos", height=260, showlegend=False, uniformtext_minsize=12, uniformtext_mode='hide')
-    fig_week.update_xaxes(tickangle=-24)
-    fig_week = apply_clean_theme(fig_week)
-    st.plotly_chart(fig_week, use_container_width=True)
-    chart_box_close()
+    fig_timeline.update_layout(
+        xaxis_title="Data",
+        yaxis_title="Local",
+        legend_title="Categoria",
+    )
+    fig_timeline = apply_readable_chart_style(fig_timeline)
+    st.plotly_chart(fig_timeline, use_container_width=True, theme=None)
 
-st.markdown("## Planeamento rápido")
-c7, c8 = st.columns(2)
+with col_f:
+    ordem_dias = [
+        "segunda-feira", "terça-feira", "quarta-feira",
+        "quinta-feira", "sexta-feira", "sábado", "domingo"
+    ]
 
-with c7:
-    route = (
-        fdf.groupby(["data", "local_curto"], as_index=False)
+    dow = (
+        df_filtered.groupby("dia_semana")
         .size()
-        .rename(columns={"size": "eventos"})
-        .sort_values(["data", "eventos"], ascending=[True, False])
-        .groupby("data")
-        .head(1)
-        .copy()
+        .reindex(ordem_dias, fill_value=0)
+        .reset_index(name="eventos")
+        .rename(columns={"dia_semana": "dia"})
     )
-    route["Data"] = route["data"].dt.strftime("%d/%m/%Y")
-    route = route[["Data", "local_curto", "eventos"]].rename(columns={"local_curto": "Local recomendado", "eventos": "Nº eventos"})
-    st.dataframe(route, use_container_width=True, hide_index=True)
 
-with c8:
-    recurring = (
-        fdf.groupby("artista", as_index=False)
-        .agg(eventos=("artista", "size"), locais=("local_curto", "nunique"), dias=("data", "nunique"))
-        .sort_values(["eventos", "locais", "dias"], ascending=False)
-        .head(10)
+    fig_dow = px.bar(
+        dow,
+        x="dia",
+        y="eventos",
+        title="Eventos por dia da semana",
+        color="eventos",
+        color_continuous_scale=CHART_SCALE,
     )
-    recurring["Presença"] = recurring.apply(
-        lambda r: f"{int(r['eventos'])} eventos · {int(r['locais'])} locais · {int(r['dias'])} dias",
-        axis=1,
+    fig_dow.update_layout(
+        xaxis_title="Dia da semana",
+        yaxis_title="Eventos",
+        coloraxis_showscale=False,
     )
-    recurring = recurring[["artista", "Presença"]].rename(columns={"artista": "Nome"})
-    st.dataframe(recurring, use_container_width=True, hide_index=True)
+    fig_dow = apply_readable_chart_style(fig_dow)
+    st.plotly_chart(fig_dow, use_container_width=True, theme=None)
 
-st.markdown("## Tabela detalhada")
-show_df = fdf[["data", "dia_semana", "local_curto", "artista", "tipo_evento", "contexto", "intensidade"]].copy()
-show_df["data"] = show_df["data"].dt.strftime("%Y-%m-%d")
-show_df = show_df.rename(columns={
-    "data": "Data",
-    "dia_semana": "Dia da semana",
-    "local_curto": "Local",
-    "artista": "Artista / momento",
-    "tipo_evento": "Categoria",
-    "contexto": "Contexto",
-    "intensidade": "Intensidade do dia",
-})
-st.dataframe(show_df, use_container_width=True, hide_index=True, height=460)
 
-csv = show_df.to_csv(index=False).encode("utf-8-sig")
+# =========================================================
+# SECTION 4
+# =========================================================
+st.markdown('<div class="section-label">Nomes mais recorrentes</div>', unsafe_allow_html=True)
+
+top_artists = (
+    df_filtered.groupby("artista_evento")
+    .size()
+    .reset_index(name="ocorrencias")
+    .sort_values("ocorrencias", ascending=False)
+    .head(15)
+)
+
+fig_artists = px.bar(
+    top_artists,
+    x="ocorrencias",
+    y="artista_evento",
+    orientation="h",
+    title="Top 15 artistas / entradas",
+    color="ocorrencias",
+    color_continuous_scale=CHART_SCALE,
+)
+fig_artists.update_layout(
+    yaxis=dict(categoryorder="total ascending"),
+    xaxis_title="Ocorrências",
+    yaxis_title="Artista / evento",
+    coloraxis_showscale=False,
+)
+fig_artists = apply_readable_chart_style(fig_artists)
+st.plotly_chart(fig_artists, use_container_width=True, theme=None)
+
+
+# =========================================================
+# ROUTE
+# =========================================================
+st.markdown('<div class="section-label">Sugestões de rota</div>', unsafe_allow_html=True)
+
+rota = (
+    df_filtered.groupby(["data", "local"])
+    .size()
+    .reset_index(name="eventos")
+    .sort_values(["data", "eventos"], ascending=[True, False])
+    .groupby("data")
+    .head(1)
+    .sort_values("data")
+)
+
+if not rota.empty:
+    rota_view = rota.copy()
+    rota_view["data"] = rota_view["data"].dt.strftime("%d/%m/%Y")
+    rota_view = rota_view.rename(columns={
+        "data": "Data",
+        "local": "Local sugerido",
+        "eventos": "Volume"
+    })
+    st.dataframe(rota_view, use_container_width=True, hide_index=True)
+else:
+    st.info("Sem dados suficientes para gerar uma rota sugerida.")
+
+
+# =========================================================
+# TABLE
+# =========================================================
+st.markdown('<div class="section-label">Detalhe dos eventos</div>', unsafe_allow_html=True)
+
+table_view = (
+    df_filtered[
+        ["data", "dia_semana", "local", "artista_evento", "categoria", "feriado", "fim_de_semana", "eventos_no_dia"]
+    ]
+    .rename(columns={
+        "data": "Data",
+        "dia_semana": "Dia da semana",
+        "local": "Local",
+        "artista_evento": "Artista / Evento",
+        "categoria": "Categoria",
+        "feriado": "Feriado",
+        "fim_de_semana": "Fim de semana",
+        "eventos_no_dia": "Eventos no dia",
+    })
+    .copy()
+)
+
+table_view["Data"] = pd.to_datetime(table_view["Data"]).dt.strftime("%d/%m/%Y")
+
+st.dataframe(table_view, use_container_width=True, hide_index=True)
+
+csv = table_view.to_csv(index=False).encode("utf-8-sig")
 st.download_button(
-    "Exportar tabela filtrada (CSV)",
+    "⬇️ Exportar tabela filtrada (CSV)",
     data=csv,
     file_name="santos_populares_2026_filtrado.csv",
     mime="text/csv",

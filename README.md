@@ -1,151 +1,53 @@
-# 🎊 Santos Populares 2026 — Dashboard Lisboa
+# Santos Populares 2026 Dashboard
 
-Dashboard interativo para explorar a agenda dos Santos Populares de Lisboa 2026.  
-Construído com **Streamlit**, **Pandas** e **Plotly**.
-
-![Python](https://img.shields.io/badge/python-3.11%2B-blue?style=flat-square)
-![Streamlit](https://img.shields.io/badge/streamlit-1.35%2B-FF4B4B?style=flat-square&logo=streamlit&logoColor=white)
-![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)
-![CI](https://github.com/<SEU_USERNAME>/santos-populares-2026/actions/workflows/ci.yml/badge.svg)
-
----
+Dashboard interativo em Streamlit para explorar a programação dos Santos Populares 2026 a partir de um ficheiro Excel.
 
 ## Funcionalidades
 
-- **Filtros dinâmicos** — intervalo de datas, local, artista, tipo de evento, contexto (feriado / fim de semana)
-- **Métricas de resumo** — total de eventos, locais ativos, artistas, dia mais intenso
-- **Heatmap calendário** — densidade de eventos por dia e mês
-- **Curva temporal** — pulso diário da programação
-- **Ranking** — top locais e artistas/momentos
-- **Agenda interativa** — scatter plot por local e data
-- **Planeamento rápido** — local recomendado por dia e presença de artistas
-- **Exportação CSV** — tabela filtrada para download
+- Leitura e transformação automática do ficheiro `santos.xlsx`
+- Filtros por intervalo de datas, local, categoria, intensidade e artista
+- KPIs de resumo
+- Heatmap diário
+- Curva temporal de eventos
+- Ranking de arraiais
+- Distribuição por categoria
+- Timeline da programação
+- Top artistas / entradas
+- Exportação da tabela filtrada para CSV
 
----
+## Estrutura do projeto
 
-## Estrutura do repositório
-
-```
-santos-populares-2026/
-├── app.py                      # Aplicação Streamlit principal
-├── requirements.txt            # Dependências Python
-├── .python-version             # Versão Python (pyenv / asdf)
-├── .streamlit/
-│   └── config.toml             # Configuração do Streamlit
-├── data/
-│   └── santos.xlsx             # Dados da agenda (substituível — ver abaixo)
-├── tests/
-│   ├── __init__.py
-│   └── test_data_loading.py    # Testes de sanidade ao pipeline de dados
-├── .github/
-│   └── workflows/
-│       └── ci.yml              # CI: testes automáticos no push/PR
+```txt
+.
+├── app.py
+├── requirements.txt
+├── README.md
 ├── .gitignore
-└── README.md
+└── data/
+    └── santos.xlsx
 ```
 
----
-
-## Instalação rápida
+## Instalação local
 
 ```bash
-# 1. Clonar
-git clone https://github.com/<SEU_USERNAME>/santos-populares-2026.git
-cd santos-populares-2026
-
-# 2. Criar ambiente virtual
-python -m venv .venv
-source .venv/bin/activate        # Windows: .venv\Scripts\activate
-
-# 3. Instalar dependências
 pip install -r requirements.txt
-
-# 4. Correr o dashboard
 streamlit run app.py
 ```
 
-O browser abre automaticamente em `http://localhost:8501`.
+## Deploy
 
----
+Este projeto pode ser publicado diretamente no Streamlit Community Cloud a partir do GitHub.
 
-## Atualizar os dados (xlsx)
+- Repository: o teu repositório GitHub
+- Branch: `main`
+- Main file path: `app.py`
 
-O dashboard foi desenhado para aceitar versões atualizadas da agenda sem alterar código.
+## Dados
 
-### Passo a passo
+O dashboard espera encontrar o ficheiro Excel em:
 
-1. Obtém o novo ficheiro Excel atualizado.
-2. **Verifica que o formato está correto** (ver secção abaixo).
-3. Substitui `data/santos.xlsx` pelo novo ficheiro:
-   ```bash
-   cp ~/Downloads/santos_2027.xlsx data/santos.xlsx
-   ```
-4. (Opcional) Corre os testes para confirmar que o ficheiro é válido:
-   ```bash
-   pytest tests/ -v
-   ```
-5. Reinicia o Streamlit — os dados são recarregados automaticamente (cache TTL: 1 hora).  
-   Para forçar recarga imediata: abre o menu ⋮ no canto superior direito → **Clear cache**.
-
-### Formato esperado do Excel
-
-| Requisito | Detalhe |
-|---|---|
-| Coluna `Dia` | Datas em português: `"16 de maio"`, `"10 de junho (Feriado)"` |
-| Coluna `Dia da Semana` | Nome do dia em português minúsculas: `"sábado"` |
-| Restantes colunas | Uma coluna por local/arraial |
-| Células | Nome do artista ou evento; múltiplos por célula separados por nova linha |
-| Células vazias | OK — são ignoradas |
-
-> **Nota:** O app deteta automaticamente a linha de cabeçalho procurando pela célula com valor `"Dia"`.  
-> Não é necessário que seja a primeira linha do ficheiro.
-
----
-
-## Testes
-
-```bash
-pip install pytest
-pytest tests/ -v
+```txt
+data/santos.xlsx
 ```
 
-Os testes verificam:
-- Existência do ficheiro `data/santos.xlsx`
-- Presença da coluna `Dia`
-- Parsing correto de datas em português
-- Pelo menos uma coluna de local
-- Ficheiro não vazio
-
----
-
-## Deploy (Streamlit Community Cloud)
-
-1. Faz fork/push para o teu GitHub.
-2. Vai a [share.streamlit.io](https://share.streamlit.io) → **New app**.
-3. Seleciona o repositório, branch `main`, ficheiro `app.py`.
-4. Deploy — a app fica pública e gratuita.
-
-> Para atualizar os dados na cloud: faz commit do novo `data/santos.xlsx` e faz push.  
-> O Streamlit Cloud faz redeploy automaticamente.
-
----
-
-## Dependências
-
-| Pacote | Versão mínima | Uso |
-|---|---|---|
-| `streamlit` | 1.35 | Interface web e componentes |
-| `pandas` | 2.2 | Leitura e transformação do Excel |
-| `plotly` | 5.22 | Gráficos interativos |
-| `openpyxl` | 3.1.2 | Engine de leitura de `.xlsx` |
-| `numpy` | 1.26 | Operações vetoriais |
-
----
-
-## Licença
-
-MIT — usa, modifica e distribui livremente.
-
----
-
-*Boas festas Lisboa!* 🎉
+Se o ficheiro não existir localmente, a app também permite upload manual do Excel pela interface.
