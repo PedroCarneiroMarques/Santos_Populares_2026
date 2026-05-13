@@ -1,4 +1,6 @@
 import re
+import html
+import random
 from io import BytesIO
 from pathlib import Path
 from typing import List, Optional, Tuple
@@ -99,6 +101,18 @@ def inject_css():
             max-width: 78ch;
             margin-bottom: 0.4rem;
             font-weight: 500;
+            line-height: 1.65;
+        }
+
+        .hero-subtitle a {
+            color: var(--accent);
+            text-decoration: none;
+            border-bottom: 1px solid rgba(143, 45, 20, 0.28);
+        }
+
+        .hero-subtitle a:hover {
+            color: var(--accent-2);
+            border-bottom-color: rgba(184, 106, 31, 0.48);
         }
 
         .section-label {
@@ -110,13 +124,24 @@ def inject_css():
             margin: 1rem 0 0.8rem;
         }
 
+        .kpi-row {
+            margin-bottom: 1.5rem;
+        }
+
+        .insight-row {
+            margin-top: 0.25rem;
+        }
+
         .metric-card {
             background: var(--card);
             border: 1px solid var(--line);
             border-radius: var(--radius);
             box-shadow: var(--shadow);
-            padding: 1rem 1rem 0.9rem 1rem;
-            min-height: 132px;
+            padding: 1rem 1rem 1rem 1rem;
+            min-height: 184px;
+            display: grid;
+            grid-template-rows: 28px 74px 1fr;
+            align-items: start;
         }
 
         .metric-label {
@@ -125,21 +150,28 @@ def inject_css():
             text-transform: uppercase;
             letter-spacing: 0.05em;
             font-weight: 800;
-            margin-bottom: 0.45rem;
+            line-height: 1.1;
+            margin: 0;
         }
 
         .metric-value {
+            display: flex;
+            align-items: center;
             font-size: clamp(1.5rem, 2.3vw, 2.4rem);
             line-height: 1;
             font-weight: 900;
             color: var(--ink);
-            margin-bottom: 0.35rem;
+            margin: 0;
         }
 
         .metric-note {
             color: var(--muted);
             font-size: 0.94rem;
             font-weight: 500;
+            line-height: 1.4;
+            margin: 0;
+            display: flex;
+            align-items: flex-start;
         }
 
         .insight-card {
@@ -237,6 +269,110 @@ inject_css()
 
 
 # =========================================================
+# TEXT
+# =========================================================
+QUADRAS = [
+    """Quadras para vasos de manjericos""",
+    """Hoje é dia de Santo António
+e das marchas populares,
+a seguir São João
+são pessoas aos milhares.""",
+    """Santo António sem ricos
+E toda a gente a saltar
+Enfeitado de manjericos
+Que eu vou comprar.""",
+    """Santo António enfeitado
+Dá cá um balão!
+Pois quero um encarnado
+Para dar ao meu irmão.""",
+    """No Santo António enfeitado
+Há cravos e manjericos
+[Sardinhas de cheiros encantados](https://www.mulherportuguesa.com/receita/sardinhas-assadas-com-salada-de-tomate-e-pimentos/)
+Para os pobres e para os ricos.""",
+    """A treze temos Santo António
+A vinte e quatro S. João
+A vinte e nove S. Pedro
+E recebemo-los com uma grande emoção.""",
+    """- pub -""",
+    """S. Pedro com as chaves do céu
+Com o cordeiro S. João
+E S. António
+Com o menino na mão.""",
+    """No dia de S. João
+Vamos todos cantar
+Brincar com um balão
+Até ele rebentar""",
+    """No dia de [S. Pedro](https://www.mulherportuguesa.com/lazer/anedota/deus-a-falar-com/)
+Vamos todos à sardinha
+Neste ano vou escolher
+A que for mais pequenina.""",
+    """No dia de S. João
+Vamos p´rá rua festejar
+Lançar balões para o céu
+Sempre, sempre a pular.""",
+    """A noite de S. João
+É uma noite de folia
+Vejo o fogo de artifício
+Sempre com muita alegria.""",
+    """Santo António, São João""",
+    """No Santo António
+E no S. João
+Como as sardinhas
+E deixo o pão.""",
+    """Nas noites de Sto. António
+Vou saltar uma latada
+E vou cantar, divertir-me
+Com a minha namorada.""",
+    """No mês dos santos populares
+Vou p´rá rua, vou cantar
+Não quero estar em casa
+Quero é ir pular.""",
+    """Santo António, Santo António
+Que tens tu de especial?
+Só sei que na tua festa
+Há alegria no arraial.""",
+    """Ó meu rico Santo António
+És um santo popular
+Na tua festa não falta
+Sardinha para assar.""",
+    """Santo António e S. João
+Vão ao desafio cantar
+Nas barracas das sardinhas
+Espero poder passar.""",
+    """Santo António, Santo António
+Que bonito que tu és
+Vou-te comprar um manjerico
+E vou pô-lo a teus pés.""",
+    """Ó meu rico Santo António
+Tu estás muito calado
+Quando estás à minha beira
+Fico todo envergonhado.""",
+    """Lisboa meu amor
+Lisboa, és meu amor,
+Quero contigo dançar
+Cantar cheia de fulgor
+A tradição popular.""",
+    """De manjerico na mão
+Uma quadra a namorar
+E com arquinho e balão
+Vamos todos a bailar.""",
+    """Alegrias como estas
+É difícil encontrar
+Vestida toda de festas
+Lisboa vai a cantar.""",
+    """Há festa em Portugal
+Há festa em Portugal
+São os santos populares
+Da sardinha ao manjerico
+Os cheiros andam pelos ares.""",
+    """Em Junho todos bailam
+Assim é a tradição
+As ruas estão enfeitadas
+Lá de cima até ao chão.""",
+]
+
+
+# =========================================================
 # CONSTANTS
 # =========================================================
 MESES_PT = {
@@ -275,6 +411,16 @@ def normalize_text(value) -> str:
     txt = txt.replace("\r", "\n")
     txt = re.sub(r"[ \t]+", " ", txt)
     return txt.strip()
+
+
+def markdown_links_to_html(text: str) -> str:
+    escaped = html.escape(text)
+    converted = re.sub(
+        r'\[([^\]]+)\]\(([^)]+)\)',
+        r'<a href="\2" target="_blank" rel="noopener noreferrer">\1</a>',
+        escaped
+    )
+    return converted.replace("\n", "<br>")
 
 
 def parse_date_label(label: str) -> Optional[pd.Timestamp]:
@@ -431,13 +577,15 @@ def load_and_prepare_data(file_bytes: bytes):
 # =========================================================
 # HEADER
 # =========================================================
+subtitle_html = markdown_links_to_html(random.choice(QUADRAS))
+
 st.markdown(
-    """
+    f"""
     <div class="hero-wrap">
         <div class="eyebrow">Lisboa + Arredores • Agenda Analítica</div>
         <div class="hero-title">Santos Populares 2026</div>
         <div class="hero-subtitle">
-            Criado, com amor, para a malta linda do BBC ❤️
+            {subtitle_html}
         </div>
     </div>
     """,
@@ -567,6 +715,8 @@ local_top_counts = df_filtered.groupby("local").size().sort_values(ascending=Fal
 local_top = local_top_counts.index[0] if not local_top_counts.empty else "—"
 local_top_qtd = int(local_top_counts.iloc[0]) if not local_top_counts.empty else 0
 
+st.markdown('<div class="kpi-row">', unsafe_allow_html=True)
+
 c1, c2, c3, c4 = st.columns(4)
 
 with c1:
@@ -606,10 +756,14 @@ with c4:
     </div>
     """, unsafe_allow_html=True)
 
+st.markdown('</div>', unsafe_allow_html=True)
+
 
 # =========================================================
 # INSIGHTS
 # =========================================================
+st.markdown('<div class="insight-row">', unsafe_allow_html=True)
+
 i1, i2, i3 = st.columns(3)
 
 with i1:
@@ -641,6 +795,8 @@ with i3:
         <div class="insight-body">Há <b>{feriados}</b> eventos em dias marcados como feriado e <b>{fins}</b> entradas entre sexta e domingo.</div>
     </div>
     """, unsafe_allow_html=True)
+
+st.markdown('</div>', unsafe_allow_html=True)
 
 
 # =========================================================
