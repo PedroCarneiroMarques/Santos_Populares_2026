@@ -437,7 +437,7 @@ st.markdown(
         <div class="eyebrow">Lisboa + Arredores • Agenda Analítica</div>
         <div class="hero-title">Santos Populares 2026</div>
         <div class="hero-subtitle">
-            Dashboard interativo para explorar arraiais, artistas, densidade diária e padrões da programação.
+            Criado com amor para a malta linda do BBC <3
         </div>
     </div>
     """,
