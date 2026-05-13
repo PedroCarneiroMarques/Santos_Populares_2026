@@ -135,29 +135,29 @@ def inject_css():
         .metric-card {
             background: var(--card);
             border: 1px solid var(--line);
-            border-radius: var(--radius);
+            border-radius: 16px;
             box-shadow: var(--shadow);
-            padding: 1rem 1rem 1rem 1rem;
-            min-height: 184px;
+            padding: 0.85rem 0.95rem 0.8rem 0.95rem;
+            min-height: 140px;
             display: grid;
-            grid-template-rows: 28px 74px 1fr;
+            grid-template-rows: 22px 52px 1fr;
             align-items: start;
         }
 
         .metric-label {
             color: var(--soft);
-            font-size: 0.84rem;
+            font-size: 0.78rem;
             text-transform: uppercase;
             letter-spacing: 0.05em;
             font-weight: 800;
-            line-height: 1.1;
+            line-height: 1.05;
             margin: 0;
         }
 
         .metric-value {
             display: flex;
             align-items: center;
-            font-size: clamp(1.5rem, 2.3vw, 2.4rem);
+            font-size: clamp(1.8rem, 2vw, 2.6rem);
             line-height: 1;
             font-weight: 900;
             color: var(--ink);
@@ -166,12 +166,56 @@ def inject_css():
 
         .metric-note {
             color: var(--muted);
-            font-size: 0.94rem;
+            font-size: 0.9rem;
             font-weight: 500;
-            line-height: 1.4;
+            line-height: 1.35;
             margin: 0;
             display: flex;
             align-items: flex-start;
+        }
+
+        @media (max-width: 900px) {
+            .metric-card {
+                min-height: 112px;
+                padding: 0.7rem 0.8rem 0.7rem 0.8rem;
+                grid-template-rows: 18px 42px 1fr;
+                border-radius: 14px;
+            }
+
+            .metric-label {
+                font-size: 0.72rem;
+                letter-spacing: 0.04em;
+            }
+
+            .metric-value {
+                font-size: 1.95rem;
+            }
+
+            .metric-note {
+                font-size: 0.82rem;
+                line-height: 1.25;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .metric-card {
+                min-height: 78px;
+                padding: 0.65rem 0.75rem;
+                grid-template-rows: 16px 1fr;
+                align-content: center;
+            }
+
+            .metric-label {
+                font-size: 0.68rem;
+            }
+
+            .metric-value {
+                font-size: 1.6rem;
+            }
+
+            .metric-note {
+                display: none;
+            }
         }
 
         .insight-card {
