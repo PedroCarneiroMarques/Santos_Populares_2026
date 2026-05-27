@@ -33,7 +33,12 @@ COLORS = {
     "shadow": "0 8px 22px rgba(92,54,18,.14)",
 }
 
-CHART_COLORS = ["#C62828", "#F2C300", "#1565C0", "#2E7D32", "#EF6C00", "#8E24AA"]
+CHART_COLORS = [
+    "#C62828", "#1565C0", "#2E7D32", "#EF6C00", "#8E24AA", "#00897B",
+    "#F9A825", "#5D4037", "#3949AB", "#7CB342", "#D81B60", "#6D4C41",
+    "#1E88E5", "#43A047", "#FB8C00", "#8E24AA", "#546E7A", "#E53935",
+    "#039BE5", "#00ACC1", "#7E57C2", "#C0CA33", "#F4511E", "#6A1B9A",
+]
 
 MESES_PT = {
     "Janeiro": 1,
@@ -117,10 +122,12 @@ a seguir São João
 são pessoas aos milhares.
 
 
+
 Santo António sem ricos
 E toda a gente a saltar
 Enfeitado de manjericos
 Que eu vou comprar.
+
 
 
 Santo António enfeitado
@@ -129,10 +136,12 @@ Pois quero um encarnado
 Para dar ao meu irmão.
 
 
+
 No Santo António enfeitado
 Há cravos e manjericos
 Sardinhas de cheiros encantados
 Para os pobres e para os ricos.
+
 
 
 A treze temos Santo António
@@ -141,10 +150,12 @@ A vinte e nove S. Pedro
 E recebemo-los com uma grande emoção.
 
 
+
 S. Pedro com as chaves do céu
 Com o cordeiro S. João
 E S. António
 Com o menino na mão.
+
 
 
 No dia de S. João
@@ -153,10 +164,12 @@ Brincar com um balão
 Até ele rebentar.
 
 
+
 No dia de S. Pedro
 Vamos todos à sardinha
 Neste ano vou escolher
 A que for mais pequenina.
+
 
 
 No dia de S. João
@@ -165,10 +178,12 @@ Lançar balões para o céu
 Sempre, sempre a pular.
 
 
+
 A noite de S. João
 É uma noite de folia
 Vejo o fogo de artifício
 Sempre com muita alegria.
+
 
 
 Santo António, São João
@@ -178,10 +193,12 @@ Como as sardinhas
 E deixo o pão.
 
 
+
 Nas noites de Sto. António
 Vou saltar uma latada
 E vou cantar, divertir-me
 Com a minha namorada.
+
 
 
 No mês dos santos populares
@@ -190,10 +207,12 @@ Não quero estar em casa
 Quero é ir pular.
 
 
+
 Santo António, Santo António
 Que tens tu de especial?
 Só sei que na tua festa
 Há alegria no arraial.
+
 
 
 Ó meu rico Santo António
@@ -202,10 +221,12 @@ Na tua festa não falta
 Sardinha para assar.
 
 
+
 Santo António e S. João
 Vão ao desafio cantar
 Nas barracas das sardinhas
 Espero poder passar.
+
 
 
 Santo António, Santo António
@@ -214,10 +235,12 @@ Vou-te comprar um manjerico
 E vou pô-lo a teus pés.
 
 
+
 Ó meu rico Santo António
 Tu estás muito calado
 Quando estás à minha beira
 Fico todo envergonhado.
+
 
 
 Lisboa meu amor
@@ -227,10 +250,12 @@ Cantar cheia de fulgor
 A tradição popular.
 
 
+
 De manjerico na mão
 Uma quadra a namorar
 E com arquinho e balão
 Vamos todos a bailar.
+
 
 
 Alegrias como estas
@@ -239,11 +264,13 @@ Vestida toda de festas
 Lisboa vai a cantar.
 
 
+
 Há festa em Portugal
 Há festa em Portugal
 São os santos populares
 Da sardinha ao manjerico
 Os cheiros andam pelos ares.
+
 
 
 Em Junho todos bailam
@@ -319,6 +346,59 @@ def inject_css():
         section[data-testid="stSidebar"] {{
             background: var(--surface);
             border-right: 1px solid var(--border);
+        }}
+
+        section[data-testid="stSidebar"] * {{
+            color: var(--text) !important;
+            opacity: 1 !important;
+        }}
+
+        section[data-testid="stSidebar"] h1,
+        section[data-testid="stSidebar"] h2,
+        section[data-testid="stSidebar"] h3,
+        section[data-testid="stSidebar"] p,
+        section[data-testid="stSidebar"] span,
+        section[data-testid="stSidebar"] div,
+        section[data-testid="stSidebar"] label {{
+            color: var(--text) !important;
+            opacity: 1 !important;
+        }}
+
+        section[data-testid="stSidebar"] [data-testid="stWidgetLabel"] {{
+            color: var(--text) !important;
+            font-weight: 800 !important;
+            opacity: 1 !important;
+        }}
+
+        section[data-testid="stSidebar"] .stMarkdown,
+        section[data-testid="stSidebar"] .stMarkdown p,
+        section[data-testid="stSidebar"] .stCaption,
+        section[data-testid="stSidebar"] [data-testid="stCaptionContainer"] {{
+            color: var(--muted) !important;
+            opacity: 1 !important;
+        }}
+
+        section[data-testid="stSidebar"] .stCheckbox label,
+        section[data-testid="stSidebar"] .stCheckbox label p,
+        section[data-testid="stSidebar"] [data-baseweb="checkbox"] label,
+        section[data-testid="stSidebar"] [data-baseweb="checkbox"] span {{
+            color: var(--text) !important;
+            font-weight: 700 !important;
+            opacity: 1 !important;
+        }}
+
+        section[data-testid="stSidebar"] [data-baseweb="select"] *,
+        section[data-testid="stSidebar"] [data-baseweb="input"] *,
+        section[data-testid="stSidebar"] input,
+        section[data-testid="stSidebar"] textarea {{
+            color: #FFFFFF !important;
+            -webkit-text-fill-color: #FFFFFF !important;
+        }}
+
+        section[data-testid="stSidebar"] [data-baseweb="select"] svg {{
+            fill: #FFFFFF !important;
+            color: #FFFFFF !important;
+            stroke: #FFFFFF !important;
         }}
 
         .content-shell {{
@@ -745,6 +825,11 @@ def top_acts_text(items: List[str], limit: int = 3) -> str:
     return ", ".join(clean[:limit]) if clean else "Mais surpresas a caminho"
 
 
+def build_color_map(locais: List[str]) -> Dict[str, str]:
+    ordered = sorted([l for l in locais if l])
+    return {local: CHART_COLORS[i % len(CHART_COLORS)] for i, local in enumerate(ordered)}
+
+
 @st.cache_data(ttl=3600, show_spinner=False)
 def load_and_prepare_data(file_bytes: bytes):
     raw = pd.read_excel(BytesIO(file_bytes), header=None, engine="openpyxl")
@@ -971,6 +1056,7 @@ daily = (
 )
 daily["data_label"] = pd.to_datetime(daily["data"]).dt.strftime("%d/%m")
 date_order = daily[["data", "data_label"]].drop_duplicates().sort_values("data")["data_label"].tolist()
+color_map = build_color_map(daily["local"].dropna().unique().tolist())
 
 st.markdown('<div class="content-shell">', unsafe_allow_html=True)
 
@@ -1064,7 +1150,7 @@ fig = px.bar(
     x="data_label",
     y="eventos",
     color="local",
-    color_discrete_sequence=CHART_COLORS,
+    color_discrete_map=color_map,
     category_orders={"data_label": date_order},
     title="",
 )
