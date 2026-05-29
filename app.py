@@ -562,7 +562,7 @@ def inject_css():
         }}
 
         .hero-title {{
-            font-size: clamp(1.6rem, 4vw, 3.2rem);
+            font-size: clamp(1.3rem, 3.2vw, 2.6rem);
             line-height: .95;
             letter-spacing: -.04em;
             font-weight: 900;
@@ -1498,8 +1498,8 @@ st.markdown(
 )
 
 st.markdown(
-    "<div class='section-label'>O melhor fica para o fim</div>"
-    "<div class='section-copy'>Antes de fechares o roteiro, passa pelo manjerico e abre a tua quadra do dia.</div>",
+    "<div class='section-label'>Pensamento do dia</div>"
+    "<div class='section-copy'>Clica no manjerico e abre a tua quadra do dia.</div>",
     unsafe_allow_html=True,
 )
 
