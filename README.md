@@ -1,91 +1,46 @@
-# Santos Populares 2026 Dashboard
+# Guia Oficial das Festas de Lisboa
 
-Dashboard interativo em Streamlit para explorar a programação dos Santos Populares de Lisboa 2026 a partir de um ficheiro Excel.
+Aplicação Streamlit para explorar o cartaz dos Santos Populares de Lisboa com foco em leitura rápida, destaque visual e apoio à decisão sobre onde começar a festa.[file:438]
 
-## O que faz
+## Estado atual
 
-A aplicação foi redesenhada com foco editorial e rapidez de leitura:
+A versão atual mantém como base o ficheiro `paste.txt` mais recente partilhado pelo utilizador e incorpora os últimos ajustes debatidos na conversa.[file:438]
 
-- Hero principal com quadras populares rotativas
-- KPIs resumidos para janela ativa, eventos, arraiais e maior cartaz
-- Destaque diário do melhor arraial com base na força do cabeça de cartaz
-- Ranking de arraiais com lógica editorial por notoriedade
-- Tabela filtrada com exportação CSV
-- Gráfico temporal por arraial com mapeamento de cores consistente
-- Upload manual do Excel caso o ficheiro local não exista
+### Últimos updates aplicados
 
-## Lógica de destaque
+- O card de ranking **nº1** passou a ser renderizado como destaque visual maior através de um bloco dedicado com badge, título reforçado e chips próprios.[file:438]
+- O bloco “Hoje / Amanhã / Depois” deixou de ser apresentado por ordem cronológica e passou a ser ordenado por calor do cartaz com base em `best_score`, `total` e `arraiais`.[file:438]
+- O dia mais forte da janela ativa passou a ocupar o card principal do bloco diário, usando uma variante visual própria (`day-heat-hero`).[file:438]
+- O resto da estrutura recente foi preservado, incluindo hero, manjerico, diálogo da quadra e gráfico de 7 dias.[file:438]
 
-O ranking dos arraiais não depende apenas do número de eventos.  
-Cada artista recebe um score editorial com base em:
+## Funcionalidades principais
 
-- Legado
-- Popularidade mass market
-- Relevância atual
-- Fit com o contexto dos Santos Populares
+- Leitura e preparação automática do ficheiro Excel com normalização de datas, locais, artistas e categorias.[file:438]
+- Cálculo de notoriedade por artista com perfis ponderados (`legado`, `mass_market`, `relevancia_atual`, `fit_santos`).[file:438]
+- Resumo diário por arraial com escolha do cabeça de cartaz mais forte sem somar nomes do lineup.[file:438]
+- Visualização do termómetro da festa com até 7 dias e identificação do cabeça de cartaz por ponto no gráfico.[file:438]
+- Bloco interativo do manjerico com abertura de quadras em diálogo dedicado.[file:438]
 
-O destaque do dia é definido pelo artista mais forte presente no cartaz de cada arraial.
+## Estrutura lógica relevante
 
-## Estrutura do projeto
+### Funções novas ou ajustadas
 
-```txt
-.
-├── app.py
-├── README.md
-├── CONTRIBUTING.md
-├── CHANGELOG.md
-├── LICENSE
-├── requirements.txt
-├── setup_github.sh
-├── .gitignore
-└── data/
-    └── santos.xlsx
-```
+- `build_heat_order_summaries(...)`: agrega os dias da janela de foco e ordena-os por força do cartaz em vez de cronologia.[file:438]
+- `build_day_summary(...)`: resume cada dia e devolve os indicadores usados nos cards e ranking.[file:438]
+- `summarize_options(...)`: calcula métricas por local, incluindo cabeça de cartaz, score e perfil dominante.[file:438]
 
-## Requisitos
+### Componentes visuais novos ou ajustados
 
-- Python 3.11+
-- pip
+- `top-rank-hero`, `top-rank-grid`, `top-rank-badge`, `top-rank-title` para o destaque do ranking nº1.[file:438]
+- `day-heat-hero` e `day-order-note` para o dia mais forte dentro da janela ativa.[file:438]
 
-## Instalação local
+## Execução
 
-```bash
-pip install -r requirements.txt
-streamlit run app.py
-```
+1. Garantir que existe um ficheiro `santos.xlsx` em `data/`, na raiz do projeto, ou carregar manualmente o ficheiro pela interface.[file:438]
+2. Instalar dependências do projeto Streamlit e executar a aplicação principal.[file:438]
+3. Ajustar filtros na sidebar para intervalo, local, categoria e opção de fim de semana.[file:438]
 
-## Dados
+## Notas de manutenção
 
-A app procura o ficheiro Excel nestes caminhos:
-
-```txt
-data/santos.xlsx
-santos.xlsx
-./data/santos.xlsx
-```
-
-Se não encontrar o ficheiro localmente, permite upload manual pela interface.
-
-## Deploy
-
-Pode ser publicado diretamente no Streamlit Community Cloud.
-
-- Repository: teu repositório GitHub
-- Branch: `main`
-- Main file path: `app.py`
-
-## Atualizar dados
-
-1. Substitui o ficheiro Excel em `data/santos.xlsx`
-2. Corre localmente para validar
-3. Faz commit das alterações
-
-Exemplo:
-
-```bash
-cp ~/novo_santos.xlsx data/santos.xlsx
-streamlit run app.py
-git add .
-git commit -m "data: atualizar programação"
-git push
-```
+- A ordenação visual dos cards diários já não corresponde necessariamente à ordem temporal; os rótulos “Hoje”, “Amanhã” e “Depois” funcionam apenas como contexto temporal.[file:438]
+- O ranking principal usa o dia mais quente da janela ativa, não apenas o primeiro dia cronológico do intervalo focado.[file:438]

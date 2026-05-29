@@ -1,26 +1,19 @@
 # Changelog
 
-All notable changes to this project will be documented in this file.
-Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
-
----
-
-## [1.1.0] — 2026-05-27
-
-### Changed
-- Reworked the dashboard layout with a more editorial structure
-- Added hero section with rotating quadras populares
-- Refocused KPIs on active window, events, arraiais and top cartaz
-- Replaced raw event-volume emphasis with artist-based editorial prominence
-- Added notoriety scoring by artist longevity, popularity, current relevance and Santos fit
-- Updated the daily highlight logic to favor the strongest headliner per arraial
-- Improved sidebar contrast and select visibility
-- Expanded chart color mapping to improve legend readability with many arraiais
-- Updated repository documentation to match the current app behavior
-
-## [1.0.0] — 2026-05-12
+## 2026-05-29
 
 ### Added
-- Initial release of the Santos Populares 2026 dashboard
-- Streamlit app with Excel loading pipeline
-- Interactive filters and CSV export
+
+- Destaque visual dedicado para o arraial nº1 no ranking do dia com bloco maior, badge “Top 1” e metadados reforçados.[file:438]
+- Ordenação por calor do cartaz no bloco de dias em foco através de `build_heat_order_summaries(...)`.[file:438]
+- Estilo visual especial para o dia mais forte da janela ativa com `day-heat-hero`.[file:438]
+
+### Changed
+
+- O bloco “Hoje / Amanhã / Depois” deixou de seguir estritamente a cronologia e passou a priorizar `best_score`, seguido de volume total e número de arraiais.[file:438]
+- O indicador de destaque superior na área de métricas passou a refletir o “dia mais quente” da janela ativa em vez do primeiro dia cronológico.[file:438]
+- O ranking diário passou a separar o primeiro classificado dos restantes em vez de mostrar todos com o mesmo peso visual.[file:438]
+
+### Preserved
+
+- Hero principal, sistema de quadras, manjerico, diálogo modal e gráfico de 7 dias foram mantidos como base da versão mais recente considerada correta pelo utilizador.[file:438]
