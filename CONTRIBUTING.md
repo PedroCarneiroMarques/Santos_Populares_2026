@@ -2,24 +2,31 @@
 
 ## Objetivo
 
-Este projeto privilegia clareza visual, leitura rápida e decisões orientadas por destaque de cartaz, mantendo uma estética popular e editorial inspirada nos Santos Populares.[file:438]
+Este projeto privilegia clareza visual, leitura rápida e decisões orientadas por destaque de cartaz, mantendo uma estética popular e editorial inspirada nos Santos Populares.
+
+## Estrutura do código
+
+- **`app.py`** — orquestração Streamlit; evitar lógica de negócio aqui.
+- **`data.py`** — pipeline Excel e agregações; reutilizar `summarize_options`, `build_day_summary`, `build_heat_order_summaries`.
+- **`artists.py`** — perfis e scoring; não duplicar scores noutros módulos.
+- **`components.py`** — HTML da interface; manter templates reutilizáveis.
+- **`assets/styles.css`** — estilos; variáveis de cor definidas em `config.COLORS` e injetadas por `styles.py`.
 
 ## Regras para alterações futuras
 
-- Preservar o ficheiro base mais recente validado pelo utilizador antes de introduzir novos ajustes.[file:438]
-- Sempre que houver alterações visuais, confirmar se o comportamento continua coerente entre desktop e mobile, porque a grelha muda de 4 colunas para 2 e depois 1 coluna nos breakpoints definidos no CSS.[file:438]
-- Não reverter a lógica de ordenação por calor do cartaz no bloco diário sem validação explícita, porque esta foi uma decisão funcional recente.[file:438]
-- Não voltar a uniformizar o ranking diário; o nº1 deve continuar visualmente destacado.[file:438]
+- Preservar a lógica de ordenação por calor do cartaz no bloco diário.
+- Manter o nº1 do ranking visualmente destacado (`top-rank-hero`).
+- Confirmar comportamento em desktop e mobile (grelha 4 → 2 → 1 colunas nos breakpoints do CSS).
+- Manter textos e labels em português.
 
-## Boas práticas de desenvolvimento
+## Boas práticas
 
-- Centralizar novos estilos dentro de `inject_css()` para manter consistência com a arquitetura atual.[file:438]
-- Reutilizar as funções de resumo existentes (`summarize_options`, `build_day_summary`, `build_heat_order_summaries`) antes de criar lógica duplicada.[file:438]
-- Sempre que um novo bloco visual dependa de força de cartaz, usar `best_score` e o cabeça de cartaz resultante da lógica atual, em vez de criar scores paralelos.[file:438]
-- Manter os textos e labels em português para coerência com a interface e com os dados tratados pela app.[file:438]
+- Usar `best_score` e cabeça de cartaz da lógica existente — não criar scores paralelos.
+- Editar quadras nos ficheiros `data/quadras_*.txt`, não inline no Python.
+- Correr `pytest tests/` antes de fechar alterações.
 
-## Checklist antes de fechar alterações
+## Checklist
 
-- Confirmar que o topo diário mostra o dia mais forte e não apenas o primeiro dia cronológico.[file:438]
-- Confirmar que o ranking mostra um card hero para o nº1 e linhas compactas para as restantes posições.[file:438]
-- Confirmar que a interação do manjerico continua funcional após qualquer alteração estrutural da hero section.[file:438]
+- [ ] Dia mais forte aparece como destaque principal, não o primeiro cronológico.
+- [ ] Ranking mostra card hero para nº1 e linhas compactas para o resto.
+- [ ] Manjerico e diálogo de quadras continuam funcionais após alterações.

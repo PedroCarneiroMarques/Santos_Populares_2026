@@ -1,46 +1,68 @@
 # Guia Oficial das Festas de Lisboa
 
-Aplicação Streamlit para explorar o cartaz dos Santos Populares de Lisboa com foco em leitura rápida, destaque visual e apoio à decisão sobre onde começar a festa.
+Dashboard Streamlit para explorar o cartaz dos Santos Populares de Lisboa 2026 — leitura rápida, destaque visual e apoio à decisão sobre onde começar a festa.
 
-## Estado atual
+Repositório: [PedroCarneiroMarques/Santos_Populares_2026](https://github.com/PedroCarneiroMarques/Santos_Populares_2026)
 
-A versão atual mantém como base o ficheiro `paste.txt` mais recente partilhado pelo utilizador e incorpora os últimos ajustes debatidos na conversa.
+## Funcionalidades
 
-### Últimos updates aplicados
+- Leitura automática do Excel com normalização de datas, locais, artistas e categorias.
+- Notoriedade por artista com perfis ponderados (`legado`, `mass_market`, `relevancia_atual`, `fit_santos`).
+- Resumo diário por arraial com cabeça de cartaz mais forte (sem somar nomes do lineup).
+- Termómetro da festa com até 7 dias e artista destacado em cada ponto do gráfico.
+- Manjerico interativo com quadras em diálogo dedicado.
+- Cards diários ordenados por calor do cartaz, não por cronologia.
 
-- O card de ranking **nº1** passou a ser renderizado como destaque visual maior através de um bloco dedicado com badge, título reforçado e chips próprios.
-- O bloco “Hoje / Amanhã / Depois” deixou de ser apresentado por ordem cronológica e passou a ser ordenado por calor do cartaz com base em `best_score`, `total` e `arraiais`.
-- O dia mais forte da janela ativa passou a ocupar o card principal do bloco diário, usando uma variante visual própria (`day-heat-hero`).
-- O resto da estrutura recente foi preservado, incluindo hero, manjerico, diálogo da quadra e gráfico de 7 dias.
+## Estrutura do projeto
 
-## Funcionalidades principais
-
-- Leitura e preparação automática do ficheiro Excel com normalização de datas, locais, artistas e categorias.
-- Cálculo de notoriedade por artista com perfis ponderados (`legado`, `mass_market`, `relevancia_atual`, `fit_santos`).
-- Resumo diário por arraial com escolha do cabeça de cartaz mais forte sem somar nomes do lineup.
-- Visualização do termómetro da festa com até 7 dias e identificação do cabeça de cartaz por ponto no gráfico.
-- Bloco interativo do manjerico com abertura de quadras em diálogo dedicado.
-
-## Estrutura lógica relevante
-
-### Funções novas ou ajustadas
-
-- `build_heat_order_summaries(...)`: agrega os dias da janela de foco e ordena-os por força do cartaz em vez de cronologia.
-- `build_day_summary(...)`: resume cada dia e devolve os indicadores usados nos cards e ranking.
-- `summarize_options(...)`: calcula métricas por local, incluindo cabeça de cartaz, score e perfil dominante.
-
-### Componentes visuais novos ou ajustados
-
-- `top-rank-hero`, `top-rank-grid`, `top-rank-badge`, `top-rank-title` para o destaque do ranking nº1.
-- `day-heat-hero` e `day-order-note` para o dia mais forte dentro da janela ativa.
+```
+app.py              # Entry point Streamlit (~140 linhas)
+config.py           # Cores, constantes e paths
+data.py             # Pipeline Excel e agregações
+artists.py          # Perfis de artistas e scoring
+text_utils.py       # Normalização e parsing de texto/datas
+quadras.py          # Lógica das quadras (session state)
+components.py       # Templates HTML da interface
+charts.py           # Gráfico Plotly
+styles.py           # Injeção de CSS
+assets/styles.css   # Estilos da aplicação
+data/
+  santos.xlsx       # Agenda oficial (fonte de dados)
+  quadras_hero.txt
+  quadras_manjerico.txt
+tests/              # Testes de sanidade do pipeline
+```
 
 ## Execução
 
-1. Garantir que existe um ficheiro `santos.xlsx` em `data/`, na raiz do projeto, ou carregar manualmente o ficheiro pela interface.
-2. Instalar dependências do projeto Streamlit e executar a aplicação principal.
-3. Ajustar filtros na sidebar para intervalo, local, categoria e opção de fim de semana.
+```bash
+pip install -r requirements.txt
+streamlit run app.py
+```
+
+1. Colocar `santos.xlsx` em `data/` (ou na raiz) — ou carregar manualmente pela interface.
+2. Ajustar filtros na sidebar: intervalo, local, categoria e fim de semana.
+
+## Lógica principal
+
+| Módulo | Responsabilidade |
+|--------|------------------|
+| `data.load_and_prepare_data` | Excel → DataFrame normalizado com scores |
+| `data.summarize_options` | Métricas por local e cabeça de cartaz |
+| `data.build_day_summary` | Resumo de um dia |
+| `data.build_heat_order_summaries` | Dias ordenados por força do cartaz |
+| `artists.get_artist_score` | Score 0–10 com cache |
+| `components.*` | HTML reutilizável (hero, ranking, cards) |
 
 ## Notas de manutenção
 
-- A ordenação visual dos cards diários já não corresponde necessariamente à ordem temporal; os rótulos “Hoje”, “Amanhã” e “Depois” funcionam apenas como contexto temporal.
-- O ranking principal usa o dia mais quente da janela ativa, não apenas o primeiro dia cronológico do intervalo focado.
+- Os cards “Hoje / Amanhã / Depois” são contexto temporal; a ordem visual segue `best_score`, `total` e `arraiais`.
+- O ranking principal usa o dia mais quente da janela ativa, não o primeiro dia cronológico.
+- Novos estilos: editar `assets/styles.css`; variáveis de cor vêm de `config.COLORS` via `styles.py`.
+- Novas quadras: editar `data/quadras_hero.txt` ou `data/quadras_manjerico.txt`.
+
+## Testes
+
+```bash
+pytest tests/
+```

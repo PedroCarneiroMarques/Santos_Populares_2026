@@ -16,3 +16,8 @@ env/
 .DS_Store
 .vscode/
 .idea/
+
+# HTML exports / scraped assets
+*.html
+*_files/
+data/Guia Oficial*/

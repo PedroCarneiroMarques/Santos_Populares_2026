@@ -3,9 +3,12 @@ Basic sanity tests for the data pipeline.
 Run with: pytest tests/
 """
 import re
+from pathlib import Path
+
 import pandas as pd
 import pytest
-from pathlib import Path
+
+from data import load_and_prepare_data
 
 DATA_PATH = Path(__file__).parent.parent / "data" / "santos.xlsx"
 
@@ -68,3 +71,10 @@ def test_at_least_one_local_column():
 def test_no_empty_data_file():
     df = load_raw()
     assert len(df) > 0, "Ficheiro Excel vazio"
+
+
+def test_load_and_prepare_data():
+    assert DATA_PATH.exists()
+    df = load_and_prepare_data(DATA_PATH.read_bytes())
+    assert len(df) >= 10
+    assert {"data", "local", "artista_evento", "artist_score", "categoria"}.issubset(df.columns)
