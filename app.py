@@ -890,8 +890,9 @@ def inject_css():
 
         @media (max-width: 768px) {{
             .hero-title {{
-                max-width: 14ch;
-                font-size: 2.35rem;
+                max-width: 18ch;
+                font-size: 1.95rem;
+                line-height: 1.04;
                 margin-left: auto;
                 margin-right: auto;
             }}
