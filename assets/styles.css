@@ -402,6 +402,12 @@ html, body, .stApp {
             margin-bottom: .85rem;
         }
 
+        .vote-section-divider {
+            height: 1px;
+            background: var(--border);
+            margin: 1rem 0 .75rem 0;
+        }
+
         .rank-row {
             padding: .7rem 0;
             border-bottom: 1px solid var(--border);

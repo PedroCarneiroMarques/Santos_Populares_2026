@@ -150,29 +150,27 @@ st.markdown(
 st.markdown(section("Vota no teu arraial", "Escolhe o arraial onde preferes ir. Cada pessoa tem um voto — podes mudar quando quiseres."), unsafe_allow_html=True)
 
 with st.container(border=True):
-    vote_col, leader_col = st.columns([1.1, 1])
-    with vote_col:
-        vote_index = arraiais_opcoes.index(user_vote) if user_vote in arraiais_opcoes else 0
-        escolha = st.selectbox("Arraial preferido", arraiais_opcoes, index=vote_index)
-        btn_a, btn_b = st.columns(2)
-        if btn_a.button("Confirmar voto", type="primary", use_container_width=True):
-            cast_vote(escolha)
-            st.toast(f"Voto registado em {escolha}!")
-            st.rerun()
-        if btn_b.button("Retirar voto", use_container_width=True, disabled=user_vote is None):
-            clear_vote()
-            st.toast("Voto retirado.")
-            st.rerun()
-        if user_vote:
-            st.markdown(f"<span class='vote-user-pill'>O teu voto: {user_vote}</span>", unsafe_allow_html=True)
+    vote_index = arraiais_opcoes.index(user_vote) if user_vote in arraiais_opcoes else 0
+    escolha = st.selectbox("Arraial preferido", arraiais_opcoes, index=vote_index)
+    btn_a, btn_b = st.columns(2)
+    if btn_a.button("Confirmar voto", type="primary", use_container_width=True):
+        cast_vote(escolha)
+        st.toast(f"Voto registado em {escolha}!")
+        st.rerun()
+    if btn_b.button("Retirar voto", use_container_width=True, disabled=user_vote is None):
+        clear_vote()
+        st.toast("Voto retirado.")
+        st.rerun()
+    if user_vote:
+        st.markdown(f"<span class='vote-user-pill'>O teu voto: {user_vote}</span>", unsafe_allow_html=True)
 
-    with leader_col:
-        st.markdown(
-            f"<div class='card-kicker'>Ranking da comunidade</div>"
-            f"<div class='card-copy'>{total_votes()} voto{'s' if total_votes() != 1 else ''} no total.</div>"
-            + vote_leaderboard_html(get_vote_leaderboard(8)),
-            unsafe_allow_html=True,
-        )
+    st.markdown("<div class='vote-section-divider'></div>", unsafe_allow_html=True)
+    st.markdown(
+        f"<div class='card-kicker'>Ranking da comunidade</div>"
+        f"<div class='card-copy'>{total_votes()} voto{'s' if total_votes() != 1 else ''} no total.</div>"
+        + vote_leaderboard_html(get_vote_leaderboard(8)),
+        unsafe_allow_html=True,
+    )
 
 st.markdown(
     '<div class="section-band"><div class="section-head">'
