@@ -382,7 +382,7 @@ def next_manjerico_quadra(raw_text: str) -> str:
 def render_quadra_html(markdown_text: str) -> str:
     html = markdown_text
     html = re.sub(
-        r"\[([^\]]+)\]\((https?://[^\)]+)\)",
+        r"\[([^\]]+)\((https?://[^\)]+)\)",
         r'<a href="\2" target="_blank" rel="noopener noreferrer">\1</a>',
         html,
     )
@@ -1497,7 +1497,6 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# 1 - O melhor fica para o fim
 st.markdown(
     "<div class='section-label'>O melhor fica para o fim</div>"
     "<div class='section-copy'>Antes de fechares o roteiro, passa pelo manjerico e abre a tua quadra do dia.</div>",
@@ -1522,9 +1521,8 @@ with manj_mid:
         unsafe_allow_html=True,
     )
 
-# 2 - Entrada a matar
 st.markdown(
-    '<div class="section-label">Entrada a matar</div><div class="section-copy">Um olhar rápido para entrares no ritmo da festa sem perder tempo.</div>',
+    '<div class="section-label">Aquecimento com minis</div><div class="section-copy">Um olhar rápido para entrares no ritmo da festa antes da conversa começar a sair torta.</div>',
     unsafe_allow_html=True,
 )
 
@@ -1542,10 +1540,9 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# 3 - Arraiais mais quentes do dia
 ranking_html = ['<div class="card-strong">']
 ranking_html.append(
-    '<div class="card-kicker">Arraiais mais quentes do dia</div><div class="card-copy">A hierarquia é definida pela maior nota individual de notoriedade do dia.</div>'
+    '<div class="card-kicker">Pódio da coparia</div><div class="card-copy">A hierarquia é definida pela maior nota individual de notoriedade do dia.</div>'
 )
 
 if not top_today.empty:
@@ -1579,10 +1576,9 @@ if not top_today.empty:
 ranking_html.append("</div>")
 st.markdown("".join(ranking_html), unsafe_allow_html=True)
 
-# 4 - Onde começa a festa
 st.markdown('<div class="section-band">', unsafe_allow_html=True)
 st.markdown(
-    '<div class="section-head"><div class="section-label">Onde começa a festa</div><div class="section-copy">Os dias abaixo já estão ordenados pelo calor do cartaz, não pela ordem cronológica.</div></div>',
+    '<div class="section-head"><div class="section-label">Por onde se entorna a noite</div><div class="section-copy">Os dias abaixo já estão ordenados pelo calor do cartaz, não pela ordem cronológica.</div></div>',
     unsafe_allow_html=True,
 )
 st.markdown('<div class="section-grid-4">', unsafe_allow_html=True)
@@ -1606,7 +1602,7 @@ for idx, summary in enumerate(day_summaries):
               <div class="card-copy">{copy} O destaque é definido pelo artista mais forte do cartaz, sem somar nomes.</div>
               <div style="height:.75rem"></div>
               <div class="pick-card">
-                <div class="card-kicker">Arraial em destaque</div>
+                <div class="card-kicker">Poiso oficial da molha</div>
                 <div class="card-title">{summary['best_local']}</div>
                 <div class="card-copy">Cabeça de cartaz: {summary['best_headliner']}</div>
               </div>
@@ -1638,9 +1634,8 @@ for idx, summary in enumerate(day_summaries):
 st.markdown("</div>", unsafe_allow_html=True)
 st.markdown("</div>", unsafe_allow_html=True)
 
-# 5 - Termómetro da festa
 st.markdown(
-    '<div class="card-strong"><div class="card-kicker">Termómetro da festa</div><div class="card-copy">No máximo aparecem 7 dias, com o cabeça de cartaz de cada dia destacado diretamente no ponto.</div></div>',
+    '<div class="card-strong"><div class="card-kicker">Nível de bezana</div><div class="card-copy">No máximo aparecem 7 dias, com o cabeça de cartaz de cada dia destacado diretamente no ponto.</div></div>',
     unsafe_allow_html=True,
 )
 st.plotly_chart(fig, use_container_width=True, theme=None, config={"displayModeBar": False})
