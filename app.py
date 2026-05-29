@@ -4,10 +4,9 @@ from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
 import pandas as pd
-import plotly.express as px
+import plotly.graph_objects as go
 import plotly.io as pio
 import streamlit as st
-
 
 st.set_page_config(
     page_title="Guia Oficial das Festas de Lisboa",
@@ -31,14 +30,11 @@ COLORS = {
     "accent_soft": "#FBE0D6",
     "section_tint": "#F3D94C",
     "shadow": "0 8px 22px rgba(92,54,18,.14)",
+    "green_zone": "#4CAF50",
+    "green_zone_dark": "#2E7D32",
+    "green_zone_light": "#7BC96F",
+    "green_zone_text": "#F7FFE9",
 }
-
-CHART_COLORS = [
-    "#C62828", "#1565C0", "#2E7D32", "#EF6C00", "#8E24AA", "#00897B",
-    "#F9A825", "#5D4037", "#3949AB", "#7CB342", "#D81B60", "#6D4C41",
-    "#1E88E5", "#43A047", "#FB8C00", "#8E24AA", "#546E7A", "#E53935",
-    "#039BE5", "#00ACC1", "#7E57C2", "#C0CA33", "#F4511E", "#6A1B9A",
-]
 
 MESES_PT = {
     "Janeiro": 1,
@@ -116,186 +112,241 @@ ARTIST_PROFILE_SCORES: Dict[str, Dict[str, float]] = {
     "Vozes em Liberdade": {"legado": 3.5, "mass_market": 4.0, "relevancia_atual": 4.5, "fit_santos": 5.0},
 }
 
-QUADRAS_RAW = r"""Hoje é dia de Santo António
-e das marchas populares,
-a seguir São João
-são pessoas aos milhares.
-
-
-
-Santo António sem ricos
-E toda a gente a saltar
-Enfeitado de manjericos
-Que eu vou comprar.
-
-
-
-Santo António enfeitado
-Dá cá um balão!
-Pois quero um encarnado
-Para dar ao meu irmão.
-
-
-
-No Santo António enfeitado
-Há cravos e manjericos
-Sardinhas de cheiros encantados
-Para os pobres e para os ricos.
-
-
-
-A treze temos Santo António
-A vinte e quatro S. João
-A vinte e nove S. Pedro
-E recebemo-los com uma grande emoção.
-
-
-
-S. Pedro com as chaves do céu
-Com o cordeiro S. João
-E S. António
-Com o menino na mão.
-
-
-
-No dia de S. João
-Vamos todos cantar
-Brincar com um balão
-Até ele rebentar.
-
-
-
-No dia de S. Pedro
-Vamos todos à sardinha
-Neste ano vou escolher
-A que for mais pequenina.
-
-
-
-No dia de S. João
-Vamos p'rá rua festejar
-Lançar balões para o céu
-Sempre, sempre a pular.
-
-
-
-A noite de S. João
-É uma noite de folia
-Vejo o fogo de artifício
-Sempre com muita alegria.
-
-
-
-Santo António, São João
-No Santo António
-E no S. João
-Como as sardinhas
-E deixo o pão.
-
-
-
-Nas noites de Sto. António
-Vou saltar uma latada
-E vou cantar, divertir-me
-Com a minha namorada.
-
-
-
-No mês dos santos populares
-Vou p'rá rua, vou cantar
-Não quero estar em casa
-Quero é ir pular.
-
-
-
-Santo António, Santo António
-Que tens tu de especial?
-Só sei que na tua festa
-Há alegria no arraial.
-
-
-
-Ó meu rico Santo António
-És um santo popular
-Na tua festa não falta
-Sardinha para assar.
-
-
-
-Santo António e S. João
-Vão ao desafio cantar
-Nas barracas das sardinhas
-Espero poder passar.
-
-
-
-Santo António, Santo António
-Que bonito que tu és
-Vou-te comprar um manjerico
-E vou pô-lo a teus pés.
-
-
-
-Ó meu rico Santo António
-Tu estás muito calado
-Quando estás à minha beira
-Fico todo envergonhado.
-
-
-
-Lisboa meu amor
+QUADRAS_HERO_RAW = r"""Lisboa meu amor
 Lisboa, és meu amor,
 Quero contigo dançar
 Cantar cheia de fulgor
 A tradição popular.
-
-
-
-De manjerico na mão
-Uma quadra a namorar
-E com arquinho e balão
-Vamos todos a bailar.
-
-
 
 Alegrias como estas
 É difícil encontrar
 Vestida toda de festas
 Lisboa vai a cantar.
 
-
-
-Há festa em Portugal
 Há festa em Portugal
 São os santos populares
 Da sardinha ao manjerico
-Os cheiros andam pelos ares.
+Os cheiros andam pelos ares
 
+Santo António, Santo António
+Que bonito que tu és
+Vou-te comprar um manjerico
+E vou pô-lo a teus pés.
 
+Ó meu rico Santo António
+És um santo popular
+Na tua festa não falta
+Sardinha para assar.
 
-Em Junho todos bailam
-Assim é a tradição
-As ruas estão enfeitadas
-Lá de cima até ao chão."""
+De manjerico na mão
+Uma quadra a namorar
+E com arquinho e balão
+Vamos todos a bailar.
+
+No mês dos santos populares
+Vou p'rá rua, vou cantar
+Não quero estar em casa
+Quero é ir pular.
+
+Santo António, Santo António
+Que tens tu de especial?
+Só sei que na tua festa
+Há alegria no arraial."""
+
+QUADRAS_MANJERICO_RAW = r"""Uma cerveja atrás da outra
+E caracóis para o bandulho
+Coitado do amigo Serra
+Só vê a Rita em Julho
+
+Noites tardias e confusão
+Deixa o Tony bem mal disposto
+Agora se estiver bem frequentado
+Em vez de Junho entra Agosto
+
+Sem colete de forcado
+O Cajó toureia em Julho
+Quando está todo embebedado
+Façam BARUUUUULHOOOO!
+
+Cerveja todos os dias
+Mas à segunda é que é vida
+Todos sabemos que a Carol
+É a irmã preferida
+
+Diz que bebe à animal
+Diz que é a melhor brasa
+O Gonçalo tem de abalar
+Perdeu a ganza, vai a casa
+
+Quando falamos em modelo
+Não é do supermercado
+A Mariana de Civil
+Não pega nenhum coitado
+
+Em nenhum bailarico
+Ela vai ver um Trincão
+Mariana de Ourém
+Com sorte tens um lampião
+
+Ela mal sai de Benfica
+Está la um homenzarrão
+A Marta abre-lhe abre a breguilha
+Salta de lá um furão
+
+Quer sempre ir pra casa
+Mas tem tantos jantares, é uma sorte
+Porque a Patrícia Ribeiro
+Vê que há neve em Nova York
+
+Vai buscar jola ao balcão
+Com a ajuda de um escada
+Ai a Ana, a miminho
+Fica até de madrugada
+
+Cheira a lenha em todo o lado
+Pergunta sempre: Queres fumar?
+A do Carvolhoto é purex
+Amigo, quero-me é embebedar
+
+Não tenhas nenhum acidente
+Rezamos pelo teu bem estar
+Pois menina Inês Rosa
+Já não há airbag para salvar
+
+A calvice ja não afeta
+Já não tem dor de cotovelo
+Lopes é feio teres pago
+Para teres um tufo de cabelo
+
+Com entradas a Vegeta
+Até tem um super poder
+O grande amigo Marques
+Ele não pára de beber
+
+20 dias sem dormir
+Foi a lenda que eu ouvi
+Ó meste Pedro Ribeiro
+Queríamos ser iguais a ti
+
+Copo cheio a toda a hora
+Amêndoa amarga ou Gin
+Até ganhas bem Maria
+Paga um copo a mim
+
+Come banana e puxa carroça
+E tem ressaca de 3 dias
+Alberto Cachindele
+Não aguentavas, não bebias
+
+O puto que sabe mais que outros
+Tem aço, fúria e tem vontade
+Bora lá Tomás Évora
+És filho da liberdade
+
+Para que bar irá agora
+Zezão está sempre apromado
+Sempre pronto para o bailarico
+Bora lá meu Rei do Gado
+
+Com proeza a declamar
+Vem o nosso Gama de aparelho
+Não queria dizer na rima
+Já lá vi preso um pentelho
+
+Quando a Taylor cá vem
+Na fila espera até mais não
+Ó Patricia Swifty
+Quem pagou foi o patrão
+
+Para o Iria onde há alcool
+Para beber é onde for
+É até de madrugada
+Então bota calor
+
+Foi para a aldeia porque é trolha
+Com o Benfica muito gritas
+Bora lá Carlos Serra
+O grande seca-"Pipas"
+
+Parece o outro com entradas
+Talvez fique até de manhã
+É um enigma do Benny
+Na na na na na na na
+
+Um dos carecas do grupo
+Que é velho isso sei eu
+Isac, o rei das motas
+Usa boina e nao chapéu
+
+Antigamente um bom vivã
+Agora dorme na parada
+Meu belo Afonso Costa
+Vais ser pai não tarda nada
+
+A Patrícia é bem magrinha
+Mas alegra o arraial
+Tem um sorriso tão grande
+Que não há outra igual
+
+Nestes Santos de Lisboa
+Com certeza vê o Toy
+Mas o que bate ao Carvalhoto
+É a saudade do lady boy
+
+Vamos todos por ela
+Não chega a ver ninguém cantar
+Pobre da Inês Rosa
+Teve de ir a casa jantar
+
+Caseiro como ele não há
+Fica agarrado às cadelas
+O meu Lopes assanhado
+O meu grande monta-nelas
+
+O Gama vai aos Santos
+É o maior do arraial
+Vira bicas de cerveja
+Até fica a ver mal
+
+Antigo rei das tainadas
+Sempre de copo na mão
+Para o mês que vem o puto Afonso
+Só agarra num biberão
+
+Tanta dica, tanta festa
+Ela até "fazia"
+Depois vais-se a ver
+A Inês nao aparecia"""
 
 
 def parse_quadras(raw_text: str) -> List[str]:
     return [block.strip() for block in raw_text.strip().split("\n\n") if block.strip()]
 
 
-def build_quadras() -> List[str]:
-    return parse_quadras(QUADRAS_RAW)
+def build_quadras(raw_text: str) -> List[str]:
+    return parse_quadras(raw_text)
 
 
-def rotate_quadras(quadras: List[str]) -> Tuple[str, int]:
+def ensure_quadra_state(state_key: str, quadras: List[str]) -> None:
+    if state_key not in st.session_state:
+        st.session_state[state_key] = 0 if quadras else -1
+
+
+def get_current_quadra(quadras: List[str], state_key: str) -> Tuple[str, int]:
+    ensure_quadra_state(state_key, quadras)
     if not quadras:
-        return "", 0
-    if "quadra_index" not in st.session_state:
-        st.session_state.quadra_index = 0
-    current_index = st.session_state.quadra_index % len(quadras)
-    current_quadra = quadras[current_index]
-    st.session_state.quadra_index = (current_index + 1) % len(quadras)
-    return current_quadra, current_index
+        return "", -1
+    idx = st.session_state[state_key] % len(quadras)
+    return quadras[idx], idx
+
+
+def advance_quadra(quadras: List[str], state_key: str) -> Tuple[str, int]:
+    ensure_quadra_state(state_key, quadras)
+    if not quadras:
+        return "", -1
+    st.session_state[state_key] = (st.session_state[state_key] + 1) % len(quadras)
+    idx = st.session_state[state_key]
+    return quadras[idx], idx
 
 
 def render_quadra_html(markdown_text: str) -> str:
@@ -326,6 +377,10 @@ def inject_css():
             --accent-soft: {COLORS['accent_soft']};
             --section-tint: {COLORS['section_tint']};
             --shadow: {COLORS['shadow']};
+            --green-zone: {COLORS['green_zone']};
+            --green-zone-dark: {COLORS['green_zone_dark']};
+            --green-zone-light: {COLORS['green_zone_light']};
+            --green-zone-text: {COLORS['green_zone_text']};
         }}
 
         html, body, .stApp {{
@@ -412,9 +467,7 @@ def inject_css():
         .metric-card,
         .card,
         .card-strong,
-        .soft-card,
-        .table-wrap,
-        div[data-testid="stDataFrame"] {{
+        .soft-card {{
             background: var(--surface);
             border: 1px solid var(--border);
             border-radius: 18px;
@@ -425,8 +478,7 @@ def inject_css():
         div[data-testid="stVerticalBlock"]:has(> .card-strong),
         div[data-testid="stVerticalBlock"]:has(> .card),
         div[data-testid="stVerticalBlock"]:has(> .metric-card),
-        div[data-testid="stVerticalBlock"]:has(> .hero),
-        div[data-testid="stVerticalBlock"]:has(> .table-wrap) {{
+        div[data-testid="stVerticalBlock"]:has(> .hero) {{
             background: transparent !important;
             border: none !important;
             box-shadow: none !important;
@@ -497,7 +549,7 @@ def inject_css():
 
         .hero-copy {{
             max-width: 36ch;
-            margin: 0 auto;
+            margin: 0 auto .9rem auto;
             text-align: center;
         }}
 
@@ -514,6 +566,117 @@ def inject_css():
         .eyebrow {{
             text-align: center;
             margin-bottom: .5rem;
+        }}
+
+        .hero-manjerico-wrap {{
+            display: flex;
+            justify-content: center;
+            margin-top: .15rem;
+            margin-bottom: .35rem;
+        }}
+
+        .manjerico-shell {{
+            width: 260px;
+            margin: 0 auto;
+            text-align: center;
+        }}
+
+        .manjerico-link-reset {{
+            text-decoration: none !important;
+            color: inherit !important;
+            display: inline-block;
+        }}
+
+        .manjerico-plant-zone {{
+            width: 178px;
+            height: 178px;
+            margin: 0 auto -8px auto;
+            border-radius: 999px;
+            background:
+                radial-gradient(circle at 30% 30%, #74C365 0 14%, transparent 15%),
+                radial-gradient(circle at 68% 28%, #61BC5A 0 13%, transparent 14%),
+                radial-gradient(circle at 39% 68%, #2F8737 0 13%, transparent 14%),
+                radial-gradient(circle at 70% 69%, #4AAE49 0 13%, transparent 14%),
+                radial-gradient(circle at 50% 50%, #4FAF50 0 52%, #2E7D32 100%);
+            box-shadow:
+                inset 0 10px 18px rgba(255,255,255,.16),
+                inset 0 -14px 20px rgba(18,68,22,.18),
+                0 18px 30px rgba(92,54,18,.12);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }}
+
+        .manjerico-plant-zone::after {{
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: 999px;
+            box-shadow: inset 0 0 0 1px rgba(255,255,255,.06);
+            pointer-events: none;
+        }}
+
+        .manjerico-green-button {{
+            position: relative;
+            z-index: 3;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 112px;
+            padding: .58rem .95rem;
+            border-radius: 999px;
+            background: linear-gradient(180deg, rgba(123,201,111,.98) 0%, rgba(76,175,80,.98) 45%, rgba(46,125,50,.98) 100%);
+            color: var(--green-zone-text);
+            border: 1px solid rgba(255,255,255,.22);
+            box-shadow:
+                0 10px 24px rgba(20,70,24,.24),
+                inset 0 1px 0 rgba(255,255,255,.18);
+            font-weight: 900;
+            letter-spacing: .02em;
+            font-size: .88rem;
+            line-height: 1;
+            cursor: pointer;
+            transition: transform .16s ease, filter .16s ease, box-shadow .16s ease;
+            user-select: none;
+            backdrop-filter: blur(1px);
+        }}
+
+        .manjerico-green-button:hover {{
+            transform: translateY(-1px) scale(1.02);
+            filter: brightness(1.03);
+            box-shadow:
+                0 14px 28px rgba(20,70,24,.28),
+                inset 0 1px 0 rgba(255,255,255,.2);
+        }}
+
+        .manjerico-green-button:active {{
+            transform: translateY(0) scale(.99);
+        }}
+
+        .manjerico-pot {{
+            width: 150px;
+            height: 92px;
+            margin: 0 auto;
+            background: linear-gradient(180deg, #DB9462 0%, #C87A48 55%, #A55E34 100%);
+            border-radius: 0 0 70px 70px / 0 0 52px 52px;
+            border: 1px solid rgba(124,76,39,.35);
+            position: relative;
+            box-shadow: 0 18px 28px rgba(92,54,18,.12);
+        }}
+
+        .manjerico-pot::before {{
+            content: "";
+            position: absolute;
+            left: 50%;
+            top: -14px;
+            transform: translateX(-50%);
+            width: 166px;
+            height: 24px;
+            background: linear-gradient(180deg, #E3A06E 0%, #C87847 100%);
+            border-radius: 999px;
+            border: 1px solid rgba(124,76,39,.35);
         }}
 
         .metric-grid {{
@@ -599,11 +762,6 @@ def inject_css():
             margin-bottom: 1rem;
         }}
 
-        .table-wrap {{
-            margin-top: .55rem;
-            overflow: hidden;
-        }}
-
         .rank-place {{
             color: var(--text);
             font-size: .96rem;
@@ -612,12 +770,70 @@ def inject_css():
             margin-bottom: .12rem;
         }}
 
-        .stDownloadButton button {{
-            border-radius: 12px !important;
-            border: 1px solid var(--border-strong) !important;
-            background: var(--surface) !important;
-            color: var(--text) !important;
-            font-weight: 700 !important;
+        .top-rank-hero {{
+            background: linear-gradient(180deg, #FFF4DB 0%, #FFF0D1 100%);
+            border: 1px solid #E3B46C;
+            border-radius: 18px;
+            padding: 1rem;
+            margin-top: .75rem;
+            margin-bottom: .8rem;
+            box-shadow: 0 10px 22px rgba(184, 135, 70, .14);
+        }}
+
+        .top-rank-grid {{
+            display: grid;
+            grid-template-columns: 84px 1fr;
+            gap: .85rem;
+            align-items: center;
+        }}
+
+        .top-rank-badge {{
+            width: 84px;
+            height: 84px;
+            border-radius: 22px;
+            background: #C62828;
+            color: #FFF7E8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            box-shadow: 0 10px 24px rgba(198, 40, 40, .22);
+        }}
+
+        .top-rank-badge small {{
+            font-size: .68rem;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+            font-weight: 800;
+            opacity: .9;
+        }}
+
+        .top-rank-badge strong {{
+            font-size: 2rem;
+            line-height: 1;
+            font-weight: 900;
+        }}
+
+        .top-rank-title {{
+            font-size: 1.2rem;
+            line-height: 1.12;
+            font-weight: 900;
+            color: var(--text);
+            margin-bottom: .22rem;
+        }}
+
+        .day-heat-hero {{
+            background: linear-gradient(180deg, #FFF3DE 0%, #FFF7E8 100%);
+            border: 1px solid #E8C58A;
+        }}
+
+        .day-order-note {{
+            color: var(--soft);
+            font-size: .78rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: .06em;
+            margin-bottom: .35rem;
         }}
 
         @media (max-width: 1100px) {{
@@ -664,14 +880,46 @@ def inject_css():
                 display: none;
             }}
 
+            .manjerico-shell {{
+                width: 220px;
+            }}
+
+            .manjerico-plant-zone {{
+                width: 156px;
+                height: 156px;
+            }}
+
+            .manjerico-green-button {{
+                min-width: 100px;
+                font-size: .82rem;
+                padding: .52rem .85rem;
+            }}
+
+            .manjerico-pot {{
+                width: 132px;
+                height: 82px;
+            }}
+
+            .manjerico-pot::before {{
+                width: 148px;
+                height: 22px;
+            }}
+
+            .top-rank-grid {{
+                grid-template-columns: 1fr;
+            }}
+
+            .top-rank-badge {{
+                width: 72px;
+                height: 72px;
+            }}
+
             .hero,
             .metric-card,
             .card,
             .card-strong,
             .soft-card,
-            .pick-card,
-            .table-wrap,
-            div[data-testid="stDataFrame"] {{
+            .pick-card {{
                 border-radius: 16px;
             }}
         }}
@@ -713,6 +961,13 @@ def clean_display_text(value) -> str:
     txt = normalize_text(value).replace("\n", " · ")
     txt = re.sub(r"\s*·\s*·\s*", " · ", txt)
     return re.sub(r"\s{2,}", " ", txt).strip(" ·")
+
+
+def abbreviate_label(text: str, max_len: int = 14) -> str:
+    text = clean_display_text(text)
+    if len(text) <= max_len:
+        return text
+    return text[: max_len - 1].rstrip() + "…"
 
 
 def get_artist_profile(name: str) -> Dict[str, float]:
@@ -820,14 +1075,20 @@ def relative_label(ts: pd.Timestamp, anchor: pd.Timestamp) -> str:
     return "Depois"
 
 
-def top_acts_text(items: List[str], limit: int = 3) -> str:
-    clean = [clean_display_text(x) for x in items if clean_display_text(x)]
-    return ", ".join(clean[:limit]) if clean else "Mais surpresas a caminho"
-
-
-def build_color_map(locais: List[str]) -> Dict[str, str]:
-    ordered = sorted([l for l in locais if l])
-    return {local: CHART_COLORS[i % len(CHART_COLORS)] for i, local in enumerate(ordered)}
+def short_weekday_pt(value: str) -> str:
+    v = normalize_artist_name(value)
+    mapping = {
+        "segunda-feira": "Seg",
+        "terca-feira": "Ter",
+        "terça-feira": "Ter",
+        "quarta-feira": "Qua",
+        "quinta-feira": "Qui",
+        "sexta-feira": "Sex",
+        "sabado": "Sáb",
+        "sábado": "Sáb",
+        "domingo": "Dom",
+    }
+    return mapping.get(v, clean_display_text(value)[:3].title())
 
 
 @st.cache_data(ttl=3600, show_spinner=False)
@@ -902,6 +1163,15 @@ def build_focus(df_filtered: pd.DataFrame, anchor_date: pd.Timestamp, horizon: i
     return focus
 
 
+def build_chart_window(df_filtered: pd.DataFrame, anchor_date: pd.Timestamp, max_days: int = 7) -> pd.DataFrame:
+    target_dates = pd.date_range(anchor_date, periods=max_days, freq="D")
+    chart_df = df_filtered[df_filtered["data"].isin(target_dates)].copy()
+    if chart_df.empty:
+        fallback_dates = sorted(pd.to_datetime(df_filtered["data"].unique()))[:max_days]
+        chart_df = df_filtered[df_filtered["data"].isin(fallback_dates)].copy()
+    return chart_df
+
+
 def summarize_options(day_df: pd.DataFrame) -> pd.DataFrame:
     if day_df.empty:
         return pd.DataFrame()
@@ -927,7 +1197,7 @@ def summarize_options(day_df: pd.DataFrame) -> pd.DataFrame:
     grouped["forca_cartaz"] = grouped["cabeca_cartaz"].apply(get_artist_score)
     grouped["perfil_forca"] = grouped["cabeca_cartaz"].apply(get_headliner_profile)
     grouped["score"] = grouped["forca_cartaz"].round(1)
-    return grouped.sort_values(["score", "eventos", "atos_unicos"], ascending=[False, False, False])
+    return grouped.sort_values(["score", "eventos", "atos_unicos"], ascending=[False, False, False]).reset_index(drop=True)
 
 
 def day_mood(day_df: pd.DataFrame) -> str:
@@ -950,6 +1220,8 @@ def build_day_summary(day_df: pd.DataFrame) -> dict:
     best = options.iloc[0]
     top_acts = best["top_atos"] if isinstance(best["top_atos"], list) else []
     return {
+        "date": pd.to_datetime(day_df["data"].iloc[0]),
+        "day_name": clean_display_text(day_df["dia_semana"].iloc[0]).capitalize(),
         "total": len(day_df),
         "arraiais": day_df["local"].nunique(),
         "mood": day_mood(day_df),
@@ -964,7 +1236,56 @@ def build_day_summary(day_df: pd.DataFrame) -> dict:
     }
 
 
+def build_heat_order_summaries(focus_df: pd.DataFrame, anchor_date: pd.Timestamp) -> List[dict]:
+    summaries = []
+    for day in sorted(pd.to_datetime(focus_df["data"].unique())):
+        day_df = focus_df[focus_df["data"] == day].copy()
+        summary = build_day_summary(day_df)
+        if summary:
+            summary["relative_label"] = relative_label(day, anchor_date)
+            summaries.append(summary)
+
+    summaries = sorted(
+        summaries,
+        key=lambda x: (x["best_score"], x["total"], x["arraiais"]),
+        reverse=True,
+    )
+    return summaries
+
+
+def build_daily_chart_summary(chart_df: pd.DataFrame) -> pd.DataFrame:
+    rows = []
+    for data, g in chart_df.groupby("data"):
+        options = summarize_options(g)
+        if options.empty:
+            continue
+        best = options.iloc[0]
+        rows.append(
+            {
+                "data": pd.Timestamp(data),
+                "dia_semana": g["dia_semana"].iloc[0],
+                "local": best["local"],
+                "cabeca_cartaz": best["cabeca_cartaz"],
+                "perfil_forca": best["perfil_forca"],
+                "score": float(best["score"]),
+            }
+        )
+    return pd.DataFrame(rows).sort_values("data").reset_index(drop=True)
+
+
 inject_css()
+
+hero_quadras = build_quadras(QUADRAS_HERO_RAW)
+manjerico_quadras = build_quadras(QUADRAS_MANJERICO_RAW)
+
+ensure_quadra_state("hero_quadra_index", hero_quadras)
+ensure_quadra_state("manjerico_quadra_index", manjerico_quadras)
+
+params = st.query_params
+manjerico_action = params.get("manjerico")
+if manjerico_action == "open":
+    st.session_state.show_quadra_dialog = True
+    st.query_params.clear()
 
 candidate_paths = [Path("data/santos.xlsx"), Path("santos.xlsx"), Path("./data/santos.xlsx")]
 file_bytes = None
@@ -1028,48 +1349,69 @@ if df_filtered.empty:
 
 anchor_date = get_anchor_date(df_filtered)
 focus_df = build_focus(df_filtered, anchor_date, horizon=3)
+chart_df = build_chart_window(df_filtered, anchor_date, max_days=7)
+
 focus_dates = sorted(pd.to_datetime(focus_df["data"].unique()))
 if not focus_dates:
     st.warning("Não há festa marcada nos próximos dias com estes filtros.")
     st.stop()
 
-first_day = focus_dates[0]
-first_df = focus_df[focus_df["data"] == first_day].copy()
-first_summary = build_day_summary(first_df)
-next_summaries = []
-for day in focus_dates[1:3]:
-    day_df = focus_df[focus_df["data"] == day].copy()
-    next_summaries.append((day, day_df, build_day_summary(day_df)))
+day_summaries = build_heat_order_summaries(focus_df, anchor_date)
+if not day_summaries:
+    st.warning("Não foi possível resumir os dias em destaque.")
+    st.stop()
 
-window_events = len(focus_df)
-window_days = len(focus_dates)
-window_locals = focus_df["local"].nunique()
+first_summary = day_summaries[0]
 top_local = first_summary["best_local"]
-first_day_name = clean_display_text(first_df["dia_semana"].iloc[0]).capitalize()
+top_today = first_summary["options"].head(5).copy()
 
-top_today = first_summary["options"].head(5)
-daily = (
-    df_filtered.groupby(["data", "local"])
-    .size()
-    .reset_index(name="eventos")
-    .sort_values(["data", "eventos"], ascending=[True, False])
-)
-daily["data_label"] = pd.to_datetime(daily["data"]).dt.strftime("%d/%m")
-date_order = daily[["data", "data_label"]].drop_duplicates().sort_values("data")["data_label"].tolist()
-color_map = build_color_map(daily["local"].dropna().unique().tolist())
+if "show_quadra_dialog" not in st.session_state:
+    st.session_state.show_quadra_dialog = False
+
+hero_quadra_atual, _ = get_current_quadra(hero_quadras, "hero_quadra_index")
+hero_quadra_html = render_quadra_html(hero_quadra_atual)
+
+@st.dialog("🌿 Quadra do manjerico", width="small")
+def open_manjerico_quadra():
+    quadra_dialogo, _ = get_current_quadra(manjerico_quadras, "manjerico_quadra_index")
+    quadra_dialogo_html = render_quadra_html(quadra_dialogo)
+
+    st.markdown(
+        f"""
+        <div style="padding:.25rem .15rem .25rem .15rem;">
+            <div style="font-size:.78rem; color:#C62828; font-weight:900; text-transform:uppercase; letter-spacing:.06em; margin-bottom:.6rem;">Bilhete do manjerico</div>
+            <div style="background:#F4E24F; border:1px solid #CBB53A; border-radius:16px; padding:1rem .95rem; box-shadow:0 8px 20px rgba(92,54,18,.10);">
+                <div style="font-size:.94rem; line-height:1.6; color:#3E2615; font-weight:700;">{quadra_dialogo_html}</div>
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    col_a, col_b = st.columns(2)
+    with col_a:
+        if st.button("Outra quadra", key="next_quadra_dialog"):
+            advance_quadra(manjerico_quadras, "manjerico_quadra_index")
+            st.session_state.show_quadra_dialog = True
+            st.rerun()
+
+    with col_b:
+        if st.button("Fechar", key="close_quadra_dialog"):
+            st.session_state.show_quadra_dialog = False
+            st.rerun()
+
+if st.session_state.show_quadra_dialog:
+    st.session_state.show_quadra_dialog = False
+    open_manjerico_quadra()
 
 st.markdown('<div class="content-shell">', unsafe_allow_html=True)
-
-quadras = build_quadras()
-quadra_atual, _ = rotate_quadras(quadras)
-quadra_html = render_quadra_html(quadra_atual)
 
 st.markdown(
     f"""
     <div class="hero">
       <div class="eyebrow">🇵🇹💃🎉 Santos Populares 2026 💃🎉🇵🇹</div>
       <div class="hero-title">Guia Oficial das Festas de Lisboa</div>
-      <div class="hero-copy">{quadra_html}</div>
+      <div class="hero-copy">{hero_quadra_html}</div>
     </div>
     """,
     unsafe_allow_html=True,
@@ -1084,10 +1426,10 @@ st.markdown(
     "<div class='metric-grid'>"
     + "".join(
         [
-            f"<div class='metric-card'><div class='metric-label'>Janela ativa</div><div class='metric-value'>{window_days} dias</div><div class='metric-note'>Festa à vista</div></div>",
-            f"<div class='metric-card'><div class='metric-label'>Eventos</div><div class='metric-value'>{window_events}</div><div class='metric-note'>Momentos em cartaz</div></div>",
-            f"<div class='metric-card'><div class='metric-label'>Arraiais</div><div class='metric-value'>{window_locals}</div><div class='metric-note'>Arraiais a mexer</div></div>",
-            f"<div class='metric-card'><div class='metric-label'>Maior cartaz</div><div class='metric-value'>{top_local}</div><div class='metric-note'>{first_summary['best_headliner']} · Nota {first_summary['best_score']}/10</div></div>",
+            f"<div class='metric-card'><div class='metric-label'>Janela ativa</div><div class='metric-value'>{len(focus_dates)} dias</div><div class='metric-note'>Festa à vista</div></div>",
+            f"<div class='metric-card'><div class='metric-label'>Eventos</div><div class='metric-value'>{len(focus_df)}</div><div class='metric-note'>Momentos em cartaz</div></div>",
+            f"<div class='metric-card'><div class='metric-label'>Arraiais</div><div class='metric-value'>{focus_df['local'].nunique()}</div><div class='metric-note'>Arraiais a mexer</div></div>",
+            f"<div class='metric-card'><div class='metric-label'>Dia mais quente</div><div class='metric-value'>{format_pt_date(first_summary['date'])}</div><div class='metric-note'>{first_summary['best_local']} · Nota {first_summary['best_score']}/10</div></div>",
         ]
     )
     + "</div>",
@@ -1096,46 +1438,176 @@ st.markdown(
 
 st.markdown('<div class="section-band">', unsafe_allow_html=True)
 st.markdown(
-    '<div class="section-head"><div class="section-label">Onde começa a festa</div><div class="section-copy">A força de cada arraial é definida apenas pelo nome mais forte do cartaz em cada dia.</div></div>',
+    '<div class="section-head"><div class="section-label">Onde começa a festa</div><div class="section-copy">Os dias abaixo já estão ordenados pelo calor do cartaz, não pela ordem cronológica.</div></div>',
     unsafe_allow_html=True,
 )
 st.markdown('<div class="section-grid-4">', unsafe_allow_html=True)
 
+for idx, summary in enumerate(day_summaries):
+    is_top_day = idx == 0
+    span = "span-2" if is_top_day else "span-1"
+    card_class = "card-strong day-heat-hero" if is_top_day else "card"
+
+    extra_note = "Dia mais forte da janela ativa" if is_top_day else f"{summary['relative_label']} · {summary['mood']}"
+    title = f"{format_pt_date(summary['date'])} · {summary['day_name']}"
+    copy = f"{summary['total']} entradas distribuídas por {summary['arraiais']} arraiais."
+
+    if is_top_day:
+        st.markdown(
+            f"""
+            <div class="{card_class} {span}">
+              <div class="day-order-note">{extra_note}</div>
+              <div class="card-kicker">{summary['relative_label']} · {summary['mood']}</div>
+              <div class="card-title">{title}</div>
+              <div class="card-copy">{copy} O destaque é definido pelo artista mais forte do cartaz, sem somar nomes.</div>
+              <div style="height:.75rem"></div>
+              <div class="pick-card">
+                <div class="card-kicker">Arraial em destaque</div>
+                <div class="card-title">{summary['best_local']}</div>
+                <div class="card-copy">Cabeça de cartaz: {summary['best_headliner']}</div>
+              </div>
+              <div style="height:.75rem"></div>
+              <span class="chip chip-red">{summary['best_events']} eventos</span>
+              <span class="chip chip-olive">{summary['best_profile']}</span>
+              <span class="chip chip-gold">Score {summary['best_score']}/10</span>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+    else:
+        st.markdown(
+            f"""
+            <div class="{card_class} {span}">
+              <div class="card-kicker">{extra_note}</div>
+              <div class="card-title">{title}</div>
+              <div class="card-copy">{copy}</div>
+              <div style="height:.5rem"></div>
+              <div class="soft-card">
+                <div class="rank-place">{summary['best_local']}</div>
+                <div class="rank-meta">Cabeça de cartaz: {summary['best_headliner']} · Score {summary['best_score']}/10</div>
+              </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+st.markdown("</div>", unsafe_allow_html=True)
+st.markdown("</div>", unsafe_allow_html=True)
+
+ranking_html = ['<div class="card-strong">']
+ranking_html.append(
+    '<div class="card-kicker">Arraiais mais quentes do dia</div><div class="card-copy">A hierarquia é definida pela maior nota individual de notoriedade do dia.</div>'
+)
+
+if not top_today.empty:
+    top_row = top_today.iloc[0]
+    ranking_html.append(
+        f"""
+        <div class="top-rank-hero">
+          <div class="top-rank-grid">
+            <div class="top-rank-badge">
+              <small>Top</small>
+              <strong>1</strong>
+            </div>
+            <div>
+              <div class="top-rank-title">{top_row['local']}</div>
+              <div class="card-copy">Cabeça de cartaz: {top_row.get('cabeca_cartaz', 'Cartaz variado')}</div>
+              <div style="height:.55rem"></div>
+              <span class="chip chip-red">{int(top_row.get('eventos', 0))} eventos</span>
+              <span class="chip chip-olive">{top_row.get('perfil_forca', 'Notoriedade')}</span>
+              <span class="chip chip-gold">Score {round(float(top_row.get('score', 0)), 1)}/10</span>
+            </div>
+          </div>
+        </div>
+        """
+    )
+
+    for i, (_, row) in enumerate(top_today.iloc[1:].iterrows(), start=2):
+        ranking_html.append(
+            f"<div class='rank-row'><div class='rank-place'>{i}. {row['local']}</div><div class='rank-meta'>{row.get('cabeca_cartaz', 'Cartaz variado')} · Score {round(float(row.get('score', 0)), 1)}/10 · {row.get('perfil_forca', 'Notoriedade')}</div></div>"
+        )
+
+ranking_html.append("</div>")
+st.markdown("".join(ranking_html), unsafe_allow_html=True)
+
+chart_base = build_daily_chart_summary(chart_df)
+chart_base["dia_curto"] = chart_base["dia_semana"].apply(short_weekday_pt)
+chart_base["data_curta"] = pd.to_datetime(chart_base["data"]).dt.strftime("%d/%m")
+chart_base["artist_label"] = chart_base["cabeca_cartaz"].apply(lambda x: abbreviate_label(x, max_len=14))
+chart_base["x_label"] = chart_base["dia_curto"] + " " + chart_base["data_curta"]
+
+fig = go.Figure()
+
+fig.add_trace(
+    go.Scatter(
+        x=chart_base["x_label"],
+        y=chart_base["score"],
+        mode="lines+markers+text",
+        text=chart_base["artist_label"],
+        textposition="top center",
+        textfont=dict(size=11, color=COLORS["text"]),
+        line=dict(color=COLORS["accent"], width=3.5, shape="spline", smoothing=0.45),
+        marker=dict(
+            size=11,
+            color=COLORS["accent"],
+            line=dict(color=COLORS["surface"], width=2),
+        ),
+        customdata=chart_base[["local", "cabeca_cartaz", "perfil_forca", "data_curta"]],
+        hovertemplate=(
+            "<b>%{customdata[3]}</b><br>"
+            "Arraial em destaque: %{customdata[0]}<br>"
+            "Cabeça de cartaz: %{customdata[1]}<br>"
+            "Perfil dominante: %{customdata[2]}<br>"
+            "Score: %{y:.1f}/10<br>"
+            "<extra></extra>"
+        ),
+        cliponaxis=False,
+    )
+)
+
+fig.update_layout(
+    paper_bgcolor=COLORS["surface"],
+    plot_bgcolor=COLORS["surface"],
+    font=dict(color=COLORS["text"], size=12),
+    margin=dict(l=18, r=18, t=70, b=18),
+    xaxis_title="Dia",
+    yaxis_title="Score",
+    height=430,
+)
+
+fig.update_xaxes(showgrid=False, tickangle=0)
+fig.update_yaxes(
+    range=[0, 10],
+    tickmode="array",
+    tickvals=list(range(0, 11, 2)),
+    gridcolor="rgba(110,75,42,0.18)",
+    zeroline=False,
+)
+
 st.markdown(
-    f"""
-    <div class="card-strong span-2">
-      <div class="card-kicker">Hoje · {first_summary['mood']}</div>
-      <div class="card-title">{format_pt_date(first_day)} · {first_day_name}</div>
-      <div class="card-copy">{first_summary['total']} entradas distribuídas por {first_summary['arraiais']} arraiais. O destaque é definido pelo artista mais forte do cartaz, sem somar nomes.</div>
-      <div style="height:.75rem"></div>
-      <div class="pick-card">
-        <div class="card-kicker">Arraial em destaque</div>
-        <div class="card-title">{first_summary['best_local']}</div>
-        <div class="card-copy">Cabeça de cartaz: {first_summary['best_headliner']}</div>
-      </div>
-      <div style="height:.75rem"></div>
-      <span class="chip chip-red">{first_summary['best_events']} eventos</span>
-      <span class="chip chip-olive">{first_summary['best_profile']}</span>
-      <span class="chip chip-gold">Score {first_summary['best_score']}/10</span>
-    </div>
-    """,
+    '<div class="card-strong"><div class="card-kicker">Termómetro da festa</div><div class="card-copy">No máximo aparecem 7 dias, com o cabeça de cartaz de cada dia destacado diretamente no ponto.</div></div>',
+    unsafe_allow_html=True,
+)
+st.plotly_chart(fig, use_container_width=True, theme=None, config={"displayModeBar": False})
+
+st.markdown(
+    "<div class='section-label'>O melhor fica para o fim</div>"
+    "<div class='section-copy'>Antes de fechares o roteiro, passa pelo manjerico e abre a tua quadra do dia.</div>",
     unsafe_allow_html=True,
 )
 
-for day, day_df, summary in next_summaries:
-    if not summary:
-        continue
-    day_name = clean_display_text(day_df["dia_semana"].iloc[0]).capitalize()
+manj_left, manj_mid, manj_right = st.columns([1.2, 1, 1.2])
+with manj_mid:
     st.markdown(
-        f"""
-        <div class="card span-1">
-          <div class="card-kicker">{relative_label(day, anchor_date)} · Grande arraial</div>
-          <div class="card-title">{format_pt_date(day)} · {day_name}</div>
-          <div class="card-copy">{summary['total']} entradas · {summary['arraiais']} arraiais</div>
-          <div style="height:.5rem"></div>
-          <div class="soft-card">
-            <div class="rank-place">{summary['best_local']}</div>
-            <div class="rank-meta">Cabeça de cartaz: {summary['best_headliner']} · Score {summary['best_score']}/10</div>
+        """
+        <div class="hero-manjerico-wrap">
+          <div class="manjerico-shell">
+            <a class="manjerico-link-reset" href="?manjerico=open" target="_self">
+              <div class="manjerico-plant-zone" role="button" aria-label="Ver quadra do manjerico">
+                <span class="manjerico-green-button">Ver quadra</span>
+              </div>
+            </a>
+            <div class="manjerico-pot"></div>
           </div>
         </div>
         """,
@@ -1143,86 +1615,3 @@ for day, day_df, summary in next_summaries:
     )
 
 st.markdown("</div>", unsafe_allow_html=True)
-st.markdown("</div>", unsafe_allow_html=True)
-
-fig = px.bar(
-    daily,
-    x="data_label",
-    y="eventos",
-    color="local",
-    color_discrete_map=color_map,
-    category_orders={"data_label": date_order},
-    title="",
-)
-fig.update_layout(
-    paper_bgcolor=COLORS["surface"],
-    plot_bgcolor=COLORS["surface"],
-    font=dict(color=COLORS["text"], size=12),
-    margin=dict(l=18, r=18, t=54, b=12),
-    legend_title_text="Local",
-    xaxis_title="Data",
-    yaxis_title="Eventos",
-    barmode="stack",
-    bargap=0.32,
-    height=360,
-    legend=dict(
-        orientation="h",
-        yanchor="bottom",
-        y=1.02,
-        xanchor="center",
-        x=0.5,
-        font=dict(size=10),
-    ),
-)
-fig.update_xaxes(showgrid=False, tickangle=0)
-fig.update_yaxes(gridcolor="rgba(110,75,42,0.18)", rangemode="tozero")
-
-ranking_html = ['<div class="card-strong">']
-ranking_html.append(
-    '<div class="card-kicker">Arraiais mais quentes do dia</div><div class="card-copy">A hierarquia é definida pela maior nota individual de notoriedade do dia.</div>'
-)
-for i, (_, row) in enumerate(top_today.iterrows(), start=1):
-    ranking_html.append(
-        f"<div class='rank-row'><div class='rank-place'>{i}. {row['local']}</div><div class='rank-meta'>{row.get('cabeca_cartaz', 'Cartaz variado')} · Score {round(float(row.get('score', 0)), 1)}/10 · {row.get('perfil_forca', 'Notoriedade')}</div></div>"
-    )
-ranking_html.append("</div>")
-st.markdown("".join(ranking_html), unsafe_allow_html=True)
-
-st.markdown(
-    '<div class="card-strong"><div class="card-kicker">Termómetro da festa</div><div class="card-copy">Um mapa rápido da animação para perceber onde a festa ganha força.</div></div>',
-    unsafe_allow_html=True,
-)
-st.plotly_chart(fig, use_container_width=True, theme=None, config={"displayModeBar": False})
-
-st.markdown(
-    "<div class='section-label'>Roteiro completo</div><div class='section-copy'>No fim tens a lista completa para afinar o roteiro ao teu gosto.</div>",
-    unsafe_allow_html=True,
-)
-
-table_view = focus_df[["data", "dia_semana", "local", "artista_evento", "categoria", "feriado"]].rename(
-    columns={
-        "data": "Data",
-        "dia_semana": "Dia",
-        "local": "Local",
-        "artista_evento": "Artista / Evento",
-        "categoria": "Categoria",
-        "feriado": "Feriado",
-    }
-).copy()
-table_view["Data"] = pd.to_datetime(table_view["Data"]).dt.strftime("%d/%m/%Y")
-table_view["Score de Notoriedade"] = focus_df["artist_score"].round(1).values
-table_view["Perfil"] = focus_df["artist_profile_label"].values
-
-st.markdown('<div class="table-wrap">', unsafe_allow_html=True)
-st.dataframe(table_view, use_container_width=True, hide_index=True)
-st.markdown("</div>", unsafe_allow_html=True)
-
-st.markdown("</div>", unsafe_allow_html=True)
-
-csv = table_view.to_csv(index=False).encode("utf-8-sig")
-st.download_button(
-    "⬇️ Exportar roteiro atual (CSV)",
-    data=csv,
-    file_name="santos_populares_proximos_dias.csv",
-    mime="text/csv",
-)
