@@ -1,6 +1,3 @@
-<<<<<<< HEAD
-aW1wb3J0IHJlCmZyb20gaW8gaW1wb3J0IEJ5dGVzSU8KZnJvbSBwYXRobGliIGltcG9ydCBQYXRoCmZyb20gdHlwaW5nIGltcG9ydCBEaWN0LCBMaXN0LCBPcHRpb25hbCwgVHVwbGU
-=======
 import hashlib
 import random
 import re
@@ -1649,4 +1646,3 @@ st.markdown(
 st.plotly_chart(fig, use_container_width=True, theme=None, config={"displayModeBar": False})
 
 st.markdown("</div>", unsafe_allow_html=True)
->>>>>>> d683f6e (feat: sync app, docs and local data updates)
