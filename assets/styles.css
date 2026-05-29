@@ -357,6 +357,50 @@ html, body, .stApp {
         .chip-red { background: var(--accent-soft); color: var(--accent); border: 1px solid #E3A39A; }
         .chip-olive { background: #E4F3E3; color: #1F6B35; border: 1px solid #97C59A; }
         .chip-gold { background: #FFF3BF; color: #9A6A00; border: 1px solid #E5C94B; }
+        .chip-vote { background: #E8F0FF; color: #1A4B8C; border: 1px solid #9BB8E8; }
+
+        .vote-panel {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 1rem;
+            margin-bottom: .85rem;
+            box-shadow: var(--shadow);
+        }
+
+        .vote-leader-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: .55rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .vote-leader-row:last-child { border-bottom: none; }
+
+        .vote-leader-name { font-weight: 800; color: var(--text); }
+
+        .vote-leader-count { font-weight: 900; color: var(--accent); }
+
+        .vote-user-pill {
+            display: inline-block;
+            margin-top: .5rem;
+            padding: .35rem .65rem;
+            border-radius: 999px;
+            background: var(--accent-soft);
+            color: var(--accent);
+            font-size: .82rem;
+            font-weight: 800;
+        }
+
+        div[data-testid="stVerticalBlockBorderWrapper"] {
+            background: var(--surface) !important;
+            border-color: var(--border) !important;
+            border-radius: 18px !important;
+            box-shadow: var(--shadow);
+            padding: .75rem 1rem;
+            margin-bottom: .85rem;
+        }
 
         .rank-row {
             padding: .7rem 0;

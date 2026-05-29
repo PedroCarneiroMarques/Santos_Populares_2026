@@ -1,5 +1,7 @@
 from pathlib import Path
 
+ROOT_DIR = Path(__file__).resolve().parent
+
 COLORS = {
     "bg": "#F4E6C8",
     "surface": "#FFF7E8",
@@ -30,8 +32,9 @@ DIAS_SEMANA_PT = {
     "Thursday": "quinta-feira", "Friday": "sexta-feira", "Saturday": "sábado", "Sunday": "domingo",
 }
 
-DATA_PATHS = (Path("data/santos.xlsx"), Path("santos.xlsx"))
-QUADRAS_DIR = Path("data")
-ASSETS_DIR = Path("assets")
+DATA_PATHS = (ROOT_DIR / "data" / "santos.xlsx", ROOT_DIR / "santos.xlsx")
+QUADRAS_DIR = ROOT_DIR / "data"
+ASSETS_DIR = ROOT_DIR / "assets"
+VOTES_DB = ROOT_DIR / "data" / "votes.db"
 
 PAGE_TITLE = "Guia Oficial das Festas de Lisboa para o (B)enfica(B)eer(C)lub"

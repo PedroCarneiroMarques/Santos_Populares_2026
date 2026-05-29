@@ -43,25 +43,29 @@ def metric_grid(focus_days: int, events: int, arraiais: int, hot_day: dict) -> s
     return f"<div class='metric-grid'>{body}</div>"
 
 
-def _chips(events: int, profile: str, score: float) -> str:
+def _chips(events: int, profile: str, score: float, votes: int = 0) -> str:
+    vote_chip = f"<span class='chip chip-vote'>{votes} voto{'s' if votes != 1 else ''}</span>" if votes else ""
     return (
         f"<span class='chip chip-red'>{events} eventos</span>"
         f"<span class='chip chip-olive'>{profile}</span>"
         f"<span class='chip chip-gold'>Score {score}/10</span>"
+        f"{vote_chip}"
     )
 
 
-def ranking(top_options) -> str:
+def ranking(top_options, vote_counts: dict | None = None) -> str:
+    vote_counts = vote_counts or {}
     parts = [
         '<div class="card-strong">',
         '<div class="card-kicker">Arraiais mais quentes do dia</div>'
-        '<div class="card-copy">A hierarquia é definida pela maior nota individual de notoriedade do dia.</div>',
+        '<div class="card-copy">A hierarquia é definida pela maior nota individual de notoriedade do dia. Os votos da comunidade aparecem ao lado.</div>',
     ]
     if top_options.empty:
         parts.append("</div>")
         return "".join(parts)
 
     top = top_options.iloc[0]
+    top_votes = vote_counts.get(top["local"], 0)
     parts.append(f"""
     <div class="top-rank-hero">
       <div class="top-rank-grid">
@@ -70,25 +74,41 @@ def ranking(top_options) -> str:
           <div class="top-rank-title">{top['local']}</div>
           <div class="card-copy">Cabeça de cartaz: {top.get('cabeca_cartaz', 'Cartaz variado')}</div>
           <div style="height:.55rem"></div>
-          {_chips(int(top.get('eventos', 0)), top.get('perfil_forca', 'Notoriedade'), round(float(top.get('score', 0)), 1))}
+          {_chips(int(top.get('eventos', 0)), top.get('perfil_forca', 'Notoriedade'), round(float(top.get('score', 0)), 1), top_votes)}
         </div>
       </div>
     </div>""")
 
     for i, row in enumerate(top_options.iloc[1:].itertuples(index=False), start=2):
+        row_votes = vote_counts.get(row.local, 0)
+        vote_note = f" · {row_votes} voto{'s' if row_votes != 1 else ''}" if row_votes else ""
         parts.append(
             f"<div class='rank-row'><div class='rank-place'>{i}. {row.local}</div>"
-            f"<div class='rank-meta'>{row.cabeca_cartaz} · Score {row.score}/10 · {row.perfil_forca}</div></div>"
+            f"<div class='rank-meta'>{row.cabeca_cartaz} · Score {row.score}/10 · {row.perfil_forca}{vote_note}</div></div>"
         )
     parts.append("</div>")
     return "".join(parts)
 
 
-def day_card(summary: dict, featured: bool) -> str:
+def vote_leaderboard_html(leaderboard) -> str:
+    if leaderboard.empty:
+        return "<div class='card-copy'>Ainda não há votos. Sê o primeiro a escolher o teu arraial!</div>"
+    rows = "".join(
+        f"<div class='vote-leader-row'><span class='vote-leader-name'>{i}. {row.local}</span>"
+        f"<span class='vote-leader-count'>{int(row.votes)} voto{'s' if row.votes != 1 else ''}</span></div>"
+        for i, row in enumerate(leaderboard.itertuples(index=False), start=1)
+    )
+    return f"<div class='vote-leaderboard'>{rows}</div>"
+
+
+def day_card(summary: dict, featured: bool, vote_counts: dict | None = None) -> str:
+    vote_counts = vote_counts or {}
     title = f"{format_pt_date(summary['date'])} · {summary['day_name']}"
     copy = f"{summary['total']} entradas distribuídas por {summary['arraiais']} arraiais."
     span = "span-2" if featured else "span-1"
     card_class = "card-strong day-heat-hero" if featured else "card"
+    best_votes = vote_counts.get(summary["best_local"], 0)
+    vote_line = f" · {best_votes} voto{'s' if best_votes != 1 else ''} da comunidade" if best_votes else ""
 
     if featured:
         return f"""
@@ -101,10 +121,10 @@ def day_card(summary: dict, featured: bool) -> str:
           <div class="pick-card">
             <div class="card-kicker">Arraial em destaque</div>
             <div class="card-title">{summary['best_local']}</div>
-            <div class="card-copy">Cabeça de cartaz: {summary['best_headliner']}</div>
+            <div class="card-copy">Cabeça de cartaz: {summary['best_headliner']}{vote_line}</div>
           </div>
           <div style="height:.75rem"></div>
-          {_chips(summary['best_events'], summary['best_profile'], summary['best_score'])}
+          {_chips(summary['best_events'], summary['best_profile'], summary['best_score'], best_votes)}
         </div>"""
 
     note = f"{summary['relative_label']} · {summary['mood']}"
@@ -116,7 +136,7 @@ def day_card(summary: dict, featured: bool) -> str:
       <div style="height:.5rem"></div>
       <div class="soft-card">
         <div class="rank-place">{summary['best_local']}</div>
-        <div class="rank-meta">Cabeça de cartaz: {summary['best_headliner']} · Score {summary['best_score']}/10</div>
+        <div class="rank-meta">Cabeça de cartaz: {summary['best_headliner']} · Score {summary['best_score']}/10{vote_line}</div>
       </div>
     </div>"""
 

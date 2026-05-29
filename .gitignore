@@ -21,3 +21,6 @@ env/
 *.html
 *_files/
 data/Guia Oficial*/
+
+# Runtime vote storage
+data/votes.db
