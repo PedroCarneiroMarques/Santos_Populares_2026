@@ -4,6 +4,11 @@ import pandas as pd
 import plotly.io as pio
 import streamlit as st
 
+import streamlit as st
+
+st.title("🚧 Maintenance mode")
+st.stop()
+
 from charts import build_festival_chart
 from components import (
     MANJERICO_HTML,
