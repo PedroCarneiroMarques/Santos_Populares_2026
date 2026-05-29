@@ -192,11 +192,6 @@ Ela vai ver um Trincão
 Mariana de Ourém
 Com sorte tens um lampião
 
-Ela mal sai de Benfica
-Está la um homenzarrão
-A Marta abre-lhe abre a breguilha
-Salta de lá um furão
-
 Quer sempre ir pra casa
 Mas tem tantos jantares, é uma sorte
 Porque a Patrícia Ribeiro
