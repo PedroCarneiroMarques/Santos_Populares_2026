@@ -1,10 +1,12 @@
+import hashlib
+import random
 import re
 from io import BytesIO
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
 import pandas as pd
-import plotly.graph_objects as go
+import plotly.express as px
 import plotly.io as pio
 import streamlit as st
 
@@ -30,35 +32,25 @@ COLORS = {
     "accent_soft": "#FBE0D6",
     "section_tint": "#F3D94C",
     "shadow": "0 8px 22px rgba(92,54,18,.14)",
-    "green_zone": "#4CAF50",
-    "green_zone_dark": "#2E7D32",
-    "green_zone_light": "#7BC96F",
-    "green_zone_text": "#F7FFE9",
 }
 
+CHART_COLORS = [
+    "#C62828", "#1565C0", "#2E7D32", "#EF6C00", "#8E24AA", "#00897B",
+    "#F9A825", "#5D4037", "#3949AB", "#7CB342", "#D81B60", "#6D4C41",
+    "#1E88E5", "#43A047", "#FB8C00", "#8E24AA", "#546E7A", "#E53935",
+    "#039BE5", "#00ACC1", "#7E57C2", "#C0CA33", "#F4511E", "#6A1B9A",
+]
+
 MESES_PT = {
-    "Janeiro": 1,
-    "Fevereiro": 2,
-    "Março": 3,
-    "Abril": 4,
-    "Maio": 5,
-    "Junho": 6,
-    "Julho": 7,
-    "Agosto": 8,
-    "Setembro": 9,
-    "Outubro": 10,
-    "Novembro": 11,
-    "Dezembro": 12,
+    "Janeiro": 1, "Fevereiro": 2, "Março": 3, "Abril": 4,
+    "Maio": 5, "Junho": 6, "Julho": 7, "Agosto": 8,
+    "Setembro": 9, "Outubro": 10, "Novembro": 11, "Dezembro": 12,
 }
 
 DIAS_SEMANA_PT = {
-    "Monday": "segunda-feira",
-    "Tuesday": "terça-feira",
-    "Wednesday": "quarta-feira",
-    "Thursday": "quinta-feira",
-    "Friday": "sexta-feira",
-    "Saturday": "sábado",
-    "Sunday": "domingo",
+    "Monday": "segunda-feira", "Tuesday": "terça-feira",
+    "Wednesday": "quarta-feira", "Thursday": "quinta-feira",
+    "Friday": "sexta-feira", "Saturday": "sábado", "Sunday": "domingo",
 }
 
 ARTIST_PROFILE_SCORES: Dict[str, Dict[str, float]] = {
@@ -320,33 +312,58 @@ A Inês nao aparecia"""
 
 
 def parse_quadras(raw_text: str) -> List[str]:
-    return [block.strip() for block in raw_text.strip().split("\n\n") if block.strip()]
+    return [block.strip() for block in re.split(r"\n\s*\n", raw_text.strip()) if block.strip()]
 
 
 def build_quadras(raw_text: str) -> List[str]:
     return parse_quadras(raw_text)
 
 
-def ensure_quadra_state(state_key: str, quadras: List[str]) -> None:
-    if state_key not in st.session_state:
-        st.session_state[state_key] = 0 if quadras else -1
+def content_signature(raw_text: str) -> str:
+    return hashlib.md5(raw_text.strip().encode("utf-8")).hexdigest()
 
 
-def get_current_quadra(quadras: List[str], state_key: str) -> Tuple[str, int]:
-    ensure_quadra_state(state_key, quadras)
+def random_quadra(quadras: List[str], exclude: Optional[str] = None) -> str:
     if not quadras:
-        return "", -1
-    idx = st.session_state[state_key] % len(quadras)
-    return quadras[idx], idx
+        return ""
+    pool = [q for q in quadras if q != exclude] if exclude and len(quadras) > 1 else quadras
+    return random.choice(pool)
 
 
-def advance_quadra(quadras: List[str], state_key: str) -> Tuple[str, int]:
-    ensure_quadra_state(state_key, quadras)
+def get_randomized_hero_quadra(raw_text: str) -> str:
+    quadras = build_quadras(raw_text)
     if not quadras:
-        return "", -1
-    st.session_state[state_key] = (st.session_state[state_key] + 1) % len(quadras)
-    idx = st.session_state[state_key]
-    return quadras[idx], idx
+        return ""
+    sig = content_signature(raw_text)
+    prev_sig = st.session_state.get("hero_quadras_sig")
+    prev_quadra = st.session_state.get("hero_quadra_text")
+    if prev_sig != sig:
+        chosen = random_quadra(quadras, exclude=prev_quadra)
+        st.session_state["hero_quadras_sig"] = sig
+        st.session_state["hero_quadra_text"] = chosen
+        return chosen
+    if "hero_quadra_text" not in st.session_state:
+        st.session_state["hero_quadra_text"] = random_quadra(quadras)
+    return st.session_state["hero_quadra_text"]
+
+
+def init_manjerico_quadra(raw_text: str) -> None:
+    quadras = build_quadras(raw_text)
+    sig = content_signature(raw_text)
+    prev_sig = st.session_state.get("manjerico_quadras_sig")
+    if prev_sig != sig:
+        st.session_state["manjerico_quadras_sig"] = sig
+        st.session_state["manjerico_quadra_text"] = random_quadra(quadras)
+    elif "manjerico_quadra_text" not in st.session_state:
+        st.session_state["manjerico_quadra_text"] = random_quadra(quadras)
+
+
+def next_manjerico_quadra(raw_text: str) -> str:
+    quadras = build_quadras(raw_text)
+    current = st.session_state.get("manjerico_quadra_text")
+    chosen = random_quadra(quadras, exclude=current)
+    st.session_state["manjerico_quadra_text"] = chosen
+    return chosen
 
 
 def render_quadra_html(markdown_text: str) -> str:
@@ -377,10 +394,6 @@ def inject_css():
             --accent-soft: {COLORS['accent_soft']};
             --section-tint: {COLORS['section_tint']};
             --shadow: {COLORS['shadow']};
-            --green-zone: {COLORS['green_zone']};
-            --green-zone-dark: {COLORS['green_zone_dark']};
-            --green-zone-light: {COLORS['green_zone_light']};
-            --green-zone-text: {COLORS['green_zone_text']};
         }}
 
         html, body, .stApp {{
@@ -467,7 +480,9 @@ def inject_css():
         .metric-card,
         .card,
         .card-strong,
-        .soft-card {{
+        .soft-card,
+        .table-wrap,
+        div[data-testid="stDataFrame"] {{
             background: var(--surface);
             border: 1px solid var(--border);
             border-radius: 18px;
@@ -478,7 +493,8 @@ def inject_css():
         div[data-testid="stVerticalBlock"]:has(> .card-strong),
         div[data-testid="stVerticalBlock"]:has(> .card),
         div[data-testid="stVerticalBlock"]:has(> .metric-card),
-        div[data-testid="stVerticalBlock"]:has(> .hero) {{
+        div[data-testid="stVerticalBlock"]:has(> .hero),
+        div[data-testid="stVerticalBlock"]:has(> .table-wrap) {{
             background: transparent !important;
             border: none !important;
             box-shadow: none !important;
@@ -509,12 +525,13 @@ def inject_css():
             display: grid;
             grid-template-columns: repeat(4, minmax(0, 1fr));
             gap: .75rem;
-            align-items: start;
+            align-items: stretch;
             width: 100%;
         }}
 
         .section-grid-4 > * {{
             min-width: 0;
+            height: 100%;
         }}
 
         .span-1 {{ grid-column: span 1; }}
@@ -549,7 +566,7 @@ def inject_css():
 
         .hero-copy {{
             max-width: 36ch;
-            margin: 0 auto .9rem auto;
+            margin: 0 auto;
             text-align: center;
         }}
 
@@ -566,117 +583,6 @@ def inject_css():
         .eyebrow {{
             text-align: center;
             margin-bottom: .5rem;
-        }}
-
-        .hero-manjerico-wrap {{
-            display: flex;
-            justify-content: center;
-            margin-top: .15rem;
-            margin-bottom: .35rem;
-        }}
-
-        .manjerico-shell {{
-            width: 260px;
-            margin: 0 auto;
-            text-align: center;
-        }}
-
-        .manjerico-link-reset {{
-            text-decoration: none !important;
-            color: inherit !important;
-            display: inline-block;
-        }}
-
-        .manjerico-plant-zone {{
-            width: 178px;
-            height: 178px;
-            margin: 0 auto -8px auto;
-            border-radius: 999px;
-            background:
-                radial-gradient(circle at 30% 30%, #74C365 0 14%, transparent 15%),
-                radial-gradient(circle at 68% 28%, #61BC5A 0 13%, transparent 14%),
-                radial-gradient(circle at 39% 68%, #2F8737 0 13%, transparent 14%),
-                radial-gradient(circle at 70% 69%, #4AAE49 0 13%, transparent 14%),
-                radial-gradient(circle at 50% 50%, #4FAF50 0 52%, #2E7D32 100%);
-            box-shadow:
-                inset 0 10px 18px rgba(255,255,255,.16),
-                inset 0 -14px 20px rgba(18,68,22,.18),
-                0 18px 30px rgba(92,54,18,.12);
-            position: relative;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }}
-
-        .manjerico-plant-zone::after {{
-            content: "";
-            position: absolute;
-            inset: 0;
-            border-radius: 999px;
-            box-shadow: inset 0 0 0 1px rgba(255,255,255,.06);
-            pointer-events: none;
-        }}
-
-        .manjerico-green-button {{
-            position: relative;
-            z-index: 3;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            min-width: 112px;
-            padding: .58rem .95rem;
-            border-radius: 999px;
-            background: linear-gradient(180deg, rgba(123,201,111,.98) 0%, rgba(76,175,80,.98) 45%, rgba(46,125,50,.98) 100%);
-            color: var(--green-zone-text);
-            border: 1px solid rgba(255,255,255,.22);
-            box-shadow:
-                0 10px 24px rgba(20,70,24,.24),
-                inset 0 1px 0 rgba(255,255,255,.18);
-            font-weight: 900;
-            letter-spacing: .02em;
-            font-size: .88rem;
-            line-height: 1;
-            cursor: pointer;
-            transition: transform .16s ease, filter .16s ease, box-shadow .16s ease;
-            user-select: none;
-            backdrop-filter: blur(1px);
-        }}
-
-        .manjerico-green-button:hover {{
-            transform: translateY(-1px) scale(1.02);
-            filter: brightness(1.03);
-            box-shadow:
-                0 14px 28px rgba(20,70,24,.28),
-                inset 0 1px 0 rgba(255,255,255,.2);
-        }}
-
-        .manjerico-green-button:active {{
-            transform: translateY(0) scale(.99);
-        }}
-
-        .manjerico-pot {{
-            width: 150px;
-            height: 92px;
-            margin: 0 auto;
-            background: linear-gradient(180deg, #DB9462 0%, #C87A48 55%, #A55E34 100%);
-            border-radius: 0 0 70px 70px / 0 0 52px 52px;
-            border: 1px solid rgba(124,76,39,.35);
-            position: relative;
-            box-shadow: 0 18px 28px rgba(92,54,18,.12);
-        }}
-
-        .manjerico-pot::before {{
-            content: "";
-            position: absolute;
-            left: 50%;
-            top: -14px;
-            transform: translateX(-50%);
-            width: 166px;
-            height: 24px;
-            background: linear-gradient(180deg, #E3A06E 0%, #C87847 100%);
-            border-radius: 999px;
-            border: 1px solid rgba(124,76,39,.35);
         }}
 
         .metric-grid {{
@@ -762,6 +668,11 @@ def inject_css():
             margin-bottom: 1rem;
         }}
 
+        .table-wrap {{
+            margin-top: .55rem;
+            overflow: hidden;
+        }}
+
         .rank-place {{
             color: var(--text);
             font-size: .96rem;
@@ -770,6 +681,7 @@ def inject_css():
             margin-bottom: .12rem;
         }}
 
+        /* ── Top-1 ranking hero card ── */
         .top-rank-hero {{
             background: linear-gradient(180deg, #FFF4DB 0%, #FFF0D1 100%);
             border: 1px solid #E3B46C;
@@ -822,6 +734,7 @@ def inject_css():
             margin-bottom: .22rem;
         }}
 
+        /* ── Day heat hero card ── */
         .day-heat-hero {{
             background: linear-gradient(180deg, #FFF3DE 0%, #FFF7E8 100%);
             border: 1px solid #E8C58A;
@@ -836,6 +749,14 @@ def inject_css():
             margin-bottom: .35rem;
         }}
 
+        .stDownloadButton button {{
+            border-radius: 12px !important;
+            border: 1px solid var(--border-strong) !important;
+            background: var(--surface) !important;
+            color: var(--text) !important;
+            font-weight: 700 !important;
+        }}
+
         @media (max-width: 1100px) {{
             .content-shell {{ width: calc(100vw - 72px); }}
         }}
@@ -847,12 +768,10 @@ def inject_css():
                 margin: 0;
                 padding: .7rem .85rem 1rem .85rem;
             }}
-
             .metric-grid,
             .section-grid-4 {{
                 grid-template-columns: repeat(2, minmax(0, 1fr));
             }}
-
             .span-1, .span-2, .span-3, .span-4 {{
                 grid-column: span 2;
             }}
@@ -865,61 +784,32 @@ def inject_css():
                 margin-left: auto;
                 margin-right: auto;
             }}
-
             .metric-grid,
             .section-grid-4 {{
                 grid-template-columns: 1fr;
                 gap: .6rem;
             }}
-
             .span-1, .span-2, .span-3, .span-4 {{
                 grid-column: span 1;
             }}
-
             .metric-note {{
                 display: none;
             }}
-
-            .manjerico-shell {{
-                width: 220px;
-            }}
-
-            .manjerico-plant-zone {{
-                width: 156px;
-                height: 156px;
-            }}
-
-            .manjerico-green-button {{
-                min-width: 100px;
-                font-size: .82rem;
-                padding: .52rem .85rem;
-            }}
-
-            .manjerico-pot {{
-                width: 132px;
-                height: 82px;
-            }}
-
-            .manjerico-pot::before {{
-                width: 148px;
-                height: 22px;
-            }}
-
             .top-rank-grid {{
                 grid-template-columns: 1fr;
             }}
-
             .top-rank-badge {{
                 width: 72px;
                 height: 72px;
             }}
-
             .hero,
             .metric-card,
             .card,
             .card-strong,
             .soft-card,
-            .pick-card {{
+            .pick-card,
+            .table-wrap,
+            div[data-testid="stDataFrame"] {{
                 border-radius: 16px;
             }}
         }}
@@ -961,13 +851,6 @@ def clean_display_text(value) -> str:
     txt = normalize_text(value).replace("\n", " · ")
     txt = re.sub(r"\s*·\s*·\s*", " · ", txt)
     return re.sub(r"\s{2,}", " ", txt).strip(" ·")
-
-
-def abbreviate_label(text: str, max_len: int = 14) -> str:
-    text = clean_display_text(text)
-    if len(text) <= max_len:
-        return text
-    return text[: max_len - 1].rstrip() + "…"
 
 
 def get_artist_profile(name: str) -> Dict[str, float]:
@@ -1075,20 +958,14 @@ def relative_label(ts: pd.Timestamp, anchor: pd.Timestamp) -> str:
     return "Depois"
 
 
-def short_weekday_pt(value: str) -> str:
-    v = normalize_artist_name(value)
-    mapping = {
-        "segunda-feira": "Seg",
-        "terca-feira": "Ter",
-        "terça-feira": "Ter",
-        "quarta-feira": "Qua",
-        "quinta-feira": "Qui",
-        "sexta-feira": "Sex",
-        "sabado": "Sáb",
-        "sábado": "Sáb",
-        "domingo": "Dom",
-    }
-    return mapping.get(v, clean_display_text(value)[:3].title())
+def top_acts_text(items: List[str], limit: int = 3) -> str:
+    clean = [clean_display_text(x) for x in items if clean_display_text(x)]
+    return ", ".join(clean[:limit]) if clean else "Mais surpresas a caminho"
+
+
+def build_color_map(locais: List[str]) -> Dict[str, str]:
+    ordered = sorted([l for l in locais if l])
+    return {local: CHART_COLORS[i % len(CHART_COLORS)] for i, local in enumerate(ordered)}
 
 
 @st.cache_data(ttl=3600, show_spinner=False)
@@ -1102,7 +979,6 @@ def load_and_prepare_data(file_bytes: bytes):
     df = df.rename(columns={"Dia": "dia", "Dia da Semana": "dia_semana_excel"})
     if "dia" not in df.columns or "dia_semana_excel" not in df.columns:
         raise ValueError("Não foi possível localizar as colunas 'Dia' e 'Dia da Semana'.")
-
     df = df.dropna(axis=1, how="all").copy()
     event_cols = [c for c in df.columns if c not in ["dia", "dia_semana_excel"]]
     long_df = df.melt(
@@ -1115,25 +991,20 @@ def load_and_prepare_data(file_bytes: bytes):
     long_df = long_df[(long_df["conteudo"] != "") & (~long_df["conteudo"].isin([".", "-", "—"]))].copy()
     long_df["data"] = long_df["dia"].apply(parse_date_label)
     long_df = long_df.dropna(subset=["data"]).copy()
-
     records = []
     for _, row in long_df.iterrows():
         for entry in split_multiline_cell(row["conteudo"]):
-            records.append(
-                {
-                    "data": row["data"],
-                    "dia_label": normalize_text(row["dia"]),
-                    "dia_semana_excel": normalize_text(row["dia_semana_excel"]),
-                    "local": clean_display_text(row["local"]),
-                    "artista_evento": clean_display_text(entry),
-                    "conteudo_original": clean_display_text(row["conteudo"]),
-                }
-            )
-
+            records.append({
+                "data": row["data"],
+                "dia_label": normalize_text(row["dia"]),
+                "dia_semana_excel": normalize_text(row["dia_semana_excel"]),
+                "local": clean_display_text(row["local"]),
+                "artista_evento": clean_display_text(entry),
+                "conteudo_original": clean_display_text(row["conteudo"]),
+            })
     events = pd.DataFrame(records)
     if events.empty:
         return events
-
     events["dia_semana"] = events["data"].dt.day_name().map(DIAS_SEMANA_PT).fillna(events["dia_semana_excel"])
     events["fim_de_semana"] = events["data"].dt.dayofweek >= 4
     events["feriado"] = events["dia_label"].str.contains("Feriado", case=False, na=False)
@@ -1163,19 +1034,9 @@ def build_focus(df_filtered: pd.DataFrame, anchor_date: pd.Timestamp, horizon: i
     return focus
 
 
-def build_chart_window(df_filtered: pd.DataFrame, anchor_date: pd.Timestamp, max_days: int = 7) -> pd.DataFrame:
-    target_dates = pd.date_range(anchor_date, periods=max_days, freq="D")
-    chart_df = df_filtered[df_filtered["data"].isin(target_dates)].copy()
-    if chart_df.empty:
-        fallback_dates = sorted(pd.to_datetime(df_filtered["data"].unique()))[:max_days]
-        chart_df = df_filtered[df_filtered["data"].isin(fallback_dates)].copy()
-    return chart_df
-
-
 def summarize_options(day_df: pd.DataFrame) -> pd.DataFrame:
     if day_df.empty:
         return pd.DataFrame()
-
     grouped = (
         day_df.groupby("local")
         .agg(
@@ -1185,13 +1046,11 @@ def summarize_options(day_df: pd.DataFrame) -> pd.DataFrame:
         )
         .reset_index()
     )
-
     acts = (
         day_df.groupby("local")["artista_evento"]
         .apply(lambda s: list(dict.fromkeys([clean_display_text(x) for x in s.tolist() if clean_display_text(x)]))[:5])
         .reset_index(name="top_atos")
     )
-
     grouped = grouped.merge(acts, on="local", how="left")
     grouped["cabeca_cartaz"] = grouped["top_atos"].apply(get_headliner_name)
     grouped["forca_cartaz"] = grouped["cabeca_cartaz"].apply(get_artist_score)
@@ -1216,7 +1075,6 @@ def build_day_summary(day_df: pd.DataFrame) -> dict:
     options = summarize_options(day_df)
     if options.empty:
         return {}
-
     best = options.iloc[0]
     top_acts = best["top_atos"] if isinstance(best["top_atos"], list) else []
     return {
@@ -1237,6 +1095,11 @@ def build_day_summary(day_df: pd.DataFrame) -> dict:
 
 
 def build_heat_order_summaries(focus_df: pd.DataFrame, anchor_date: pd.Timestamp) -> List[dict]:
+    """
+    Constrói os resumos dos dias da janela ativa e ordena-os pelo calor do cartaz
+    (best_score desc, total desc, arraiais desc) em vez de ordem cronológica.
+    O label relativo (Hoje / Amanhã / Depois) mantém-se como contexto temporal.
+    """
     summaries = []
     for day in sorted(pd.to_datetime(focus_df["data"].unique())):
         day_df = focus_df[focus_df["data"] == day].copy()
@@ -1244,48 +1107,16 @@ def build_heat_order_summaries(focus_df: pd.DataFrame, anchor_date: pd.Timestamp
         if summary:
             summary["relative_label"] = relative_label(day, anchor_date)
             summaries.append(summary)
-
-    summaries = sorted(
+    return sorted(
         summaries,
         key=lambda x: (x["best_score"], x["total"], x["arraiais"]),
         reverse=True,
     )
-    return summaries
 
 
-def build_daily_chart_summary(chart_df: pd.DataFrame) -> pd.DataFrame:
-    rows = []
-    for data, g in chart_df.groupby("data"):
-        options = summarize_options(g)
-        if options.empty:
-            continue
-        best = options.iloc[0]
-        rows.append(
-            {
-                "data": pd.Timestamp(data),
-                "dia_semana": g["dia_semana"].iloc[0],
-                "local": best["local"],
-                "cabeca_cartaz": best["cabeca_cartaz"],
-                "perfil_forca": best["perfil_forca"],
-                "score": float(best["score"]),
-            }
-        )
-    return pd.DataFrame(rows).sort_values("data").reset_index(drop=True)
-
+# ── App entry point ──────────────────────────────────────────────────────────
 
 inject_css()
-
-hero_quadras = build_quadras(QUADRAS_HERO_RAW)
-manjerico_quadras = build_quadras(QUADRAS_MANJERICO_RAW)
-
-ensure_quadra_state("hero_quadra_index", hero_quadras)
-ensure_quadra_state("manjerico_quadra_index", manjerico_quadras)
-
-params = st.query_params
-manjerico_action = params.get("manjerico")
-if manjerico_action == "open":
-    st.session_state.show_quadra_dialog = True
-    st.query_params.clear()
 
 candidate_paths = [Path("data/santos.xlsx"), Path("santos.xlsx"), Path("./data/santos.xlsx")]
 file_bytes = None
@@ -1313,6 +1144,8 @@ except Exception as e:
 if df.empty:
     st.error("Não encontrei arraiais válidos neste ficheiro.")
     st.stop()
+
+# ── Sidebar filters ──────────────────────────────────────────────────────────
 
 st.sidebar.header("Filtros")
 min_date = df["data"].min().date()
@@ -1349,12 +1182,12 @@ if df_filtered.empty:
 
 anchor_date = get_anchor_date(df_filtered)
 focus_df = build_focus(df_filtered, anchor_date, horizon=3)
-chart_df = build_chart_window(df_filtered, anchor_date, max_days=7)
-
 focus_dates = sorted(pd.to_datetime(focus_df["data"].unique()))
 if not focus_dates:
     st.warning("Não há festa marcada nos próximos dias com estes filtros.")
     st.stop()
+
+# ── Summaries ordered by heat ────────────────────────────────────────────────
 
 day_summaries = build_heat_order_summaries(focus_df, anchor_date)
 if not day_summaries:
@@ -1362,20 +1195,34 @@ if not day_summaries:
     st.stop()
 
 first_summary = day_summaries[0]
-top_local = first_summary["best_local"]
-top_today = first_summary["options"].head(5).copy()
+top_today = first_summary["options"].head(5)
+
+window_events = len(focus_df)
+window_days = len(focus_dates)
+window_locals = focus_df["local"].nunique()
+
+daily = (
+    df_filtered.groupby(["data", "local"])
+    .size()
+    .reset_index(name="eventos")
+    .sort_values(["data", "eventos"], ascending=[True, False])
+)
+daily["data_label"] = pd.to_datetime(daily["data"]).dt.strftime("%d/%m")
+date_order = daily[["data", "data_label"]].drop_duplicates().sort_values("data")["data_label"].tolist()
+color_map = build_color_map(daily["local"].dropna().unique().tolist())
+
+init_manjerico_quadra(QUADRAS_MANJERICO_RAW)
+hero_quadra_atual = get_randomized_hero_quadra(QUADRAS_HERO_RAW)
+hero_quadra_html = render_quadra_html(hero_quadra_atual)
 
 if "show_quadra_dialog" not in st.session_state:
     st.session_state.show_quadra_dialog = False
 
-hero_quadra_atual, _ = get_current_quadra(hero_quadras, "hero_quadra_index")
-hero_quadra_html = render_quadra_html(hero_quadra_atual)
 
 @st.dialog("🌿 Quadra do manjerico", width="small")
 def open_manjerico_quadra():
-    quadra_dialogo, _ = get_current_quadra(manjerico_quadras, "manjerico_quadra_index")
+    quadra_dialogo = st.session_state.get("manjerico_quadra_text", "")
     quadra_dialogo_html = render_quadra_html(quadra_dialogo)
-
     st.markdown(
         f"""
         <div style="padding:.25rem .15rem .25rem .15rem;">
@@ -1387,22 +1234,19 @@ def open_manjerico_quadra():
         """,
         unsafe_allow_html=True,
     )
-
     col_a, col_b = st.columns(2)
     with col_a:
         if st.button("Outra quadra", key="next_quadra_dialog"):
-            advance_quadra(manjerico_quadras, "manjerico_quadra_index")
+            next_manjerico_quadra(QUADRAS_MANJERICO_RAW)
             st.session_state.show_quadra_dialog = True
             st.rerun()
-
     with col_b:
         if st.button("Fechar", key="close_quadra_dialog"):
             st.session_state.show_quadra_dialog = False
             st.rerun()
 
-if st.session_state.show_quadra_dialog:
-    st.session_state.show_quadra_dialog = False
-    open_manjerico_quadra()
+
+# ── Render ───────────────────────────────────────────────────────────────────
 
 st.markdown('<div class="content-shell">', unsafe_allow_html=True)
 
@@ -1417,92 +1261,43 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-st.markdown(
-    '<div class="section-label">Entrada a matar</div><div class="section-copy">Um olhar rápido para entrares no ritmo da festa sem perder tempo.</div>',
-    unsafe_allow_html=True,
-)
+col_intro_a, col_intro_b = st.columns([5, 1])
+with col_intro_a:
+    st.markdown(
+        '<div class="section-label">Entrada a matar</div>'
+        '<div class="section-copy">Um olhar rápido para entrares no ritmo da festa sem perder tempo.</div>',
+        unsafe_allow_html=True,
+    )
+with col_intro_b:
+    if st.button("🌿 Manjerico", use_container_width=True):
+        st.session_state.show_quadra_dialog = True
+
+if st.session_state.show_quadra_dialog:
+    open_manjerico_quadra()
 
 st.markdown(
     "<div class='metric-grid'>"
-    + "".join(
-        [
-            f"<div class='metric-card'><div class='metric-label'>Janela ativa</div><div class='metric-value'>{len(focus_dates)} dias</div><div class='metric-note'>Festa à vista</div></div>",
-            f"<div class='metric-card'><div class='metric-label'>Eventos</div><div class='metric-value'>{len(focus_df)}</div><div class='metric-note'>Momentos em cartaz</div></div>",
-            f"<div class='metric-card'><div class='metric-label'>Arraiais</div><div class='metric-value'>{focus_df['local'].nunique()}</div><div class='metric-note'>Arraiais a mexer</div></div>",
-            f"<div class='metric-card'><div class='metric-label'>Dia mais quente</div><div class='metric-value'>{format_pt_date(first_summary['date'])}</div><div class='metric-note'>{first_summary['best_local']} · Nota {first_summary['best_score']}/10</div></div>",
-        ]
-    )
+    + "".join([
+        f"<div class='metric-card'><div class='metric-label'>Janela ativa</div><div class='metric-value'>{window_days} dias</div><div class='metric-note'>Festa à vista</div></div>",
+        f"<div class='metric-card'><div class='metric-label'>Eventos</div><div class='metric-value'>{window_events}</div><div class='metric-note'>Momentos em cartaz</div></div>",
+        f"<div class='metric-card'><div class='metric-label'>Arraiais</div><div class='metric-value'>{window_locals}</div><div class='metric-note'>Arraiais a mexer</div></div>",
+        f"<div class='metric-card'><div class='metric-label'>Dia mais quente</div><div class='metric-value'>{format_pt_date(first_summary['date'])}</div><div class='metric-note'>{first_summary['best_local']} · Nota {first_summary['best_score']}/10</div></div>",
+    ])
     + "</div>",
     unsafe_allow_html=True,
 )
 
-st.markdown('<div class="section-band">', unsafe_allow_html=True)
-st.markdown(
-    '<div class="section-head"><div class="section-label">Onde começa a festa</div><div class="section-copy">Os dias abaixo já estão ordenados pelo calor do cartaz, não pela ordem cronológica.</div></div>',
-    unsafe_allow_html=True,
-)
-st.markdown('<div class="section-grid-4">', unsafe_allow_html=True)
-
-for idx, summary in enumerate(day_summaries):
-    is_top_day = idx == 0
-    span = "span-2" if is_top_day else "span-1"
-    card_class = "card-strong day-heat-hero" if is_top_day else "card"
-
-    extra_note = "Dia mais forte da janela ativa" if is_top_day else f"{summary['relative_label']} · {summary['mood']}"
-    title = f"{format_pt_date(summary['date'])} · {summary['day_name']}"
-    copy = f"{summary['total']} entradas distribuídas por {summary['arraiais']} arraiais."
-
-    if is_top_day:
-        st.markdown(
-            f"""
-            <div class="{card_class} {span}">
-              <div class="day-order-note">{extra_note}</div>
-              <div class="card-kicker">{summary['relative_label']} · {summary['mood']}</div>
-              <div class="card-title">{title}</div>
-              <div class="card-copy">{copy} O destaque é definido pelo artista mais forte do cartaz, sem somar nomes.</div>
-              <div style="height:.75rem"></div>
-              <div class="pick-card">
-                <div class="card-kicker">Arraial em destaque</div>
-                <div class="card-title">{summary['best_local']}</div>
-                <div class="card-copy">Cabeça de cartaz: {summary['best_headliner']}</div>
-              </div>
-              <div style="height:.75rem"></div>
-              <span class="chip chip-red">{summary['best_events']} eventos</span>
-              <span class="chip chip-olive">{summary['best_profile']}</span>
-              <span class="chip chip-gold">Score {summary['best_score']}/10</span>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-    else:
-        st.markdown(
-            f"""
-            <div class="{card_class} {span}">
-              <div class="card-kicker">{extra_note}</div>
-              <div class="card-title">{title}</div>
-              <div class="card-copy">{copy}</div>
-              <div style="height:.5rem"></div>
-              <div class="soft-card">
-                <div class="rank-place">{summary['best_local']}</div>
-                <div class="rank-meta">Cabeça de cartaz: {summary['best_headliner']} · Score {summary['best_score']}/10</div>
-              </div>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-
-st.markdown("</div>", unsafe_allow_html=True)
-st.markdown("</div>", unsafe_allow_html=True)
+# ── Ranking do dia ───────────────────────────────────────────────────────────
 
 ranking_html = ['<div class="card-strong">']
 ranking_html.append(
-    '<div class="card-kicker">Arraiais mais quentes do dia</div><div class="card-copy">A hierarquia é definida pela maior nota individual de notoriedade do dia.</div>'
+    '<div class="card-kicker">Arraiais mais quentes do dia</div>'
+    '<div class="card-copy">A hierarquia é definida pela maior nota individual de notoriedade do dia.</div>'
 )
 
 if not top_today.empty:
     top_row = top_today.iloc[0]
-    ranking_html.append(
-        f"""
+    ranking_html.append(f"""
         <div class="top-rank-hero">
           <div class="top-rank-grid">
             <div class="top-rank-badge">
@@ -1519,99 +1314,149 @@ if not top_today.empty:
             </div>
           </div>
         </div>
-        """
-    )
-
+    """)
     for i, (_, row) in enumerate(top_today.iloc[1:].iterrows(), start=2):
         ranking_html.append(
-            f"<div class='rank-row'><div class='rank-place'>{i}. {row['local']}</div><div class='rank-meta'>{row.get('cabeca_cartaz', 'Cartaz variado')} · Score {round(float(row.get('score', 0)), 1)}/10 · {row.get('perfil_forca', 'Notoriedade')}</div></div>"
+            f"<div class='rank-row'>"
+            f"<div class='rank-place'>{i}. {row['local']}</div>"
+            f"<div class='rank-meta'>{row.get('cabeca_cartaz', 'Cartaz variado')} · Score {round(float(row.get('score', 0)), 1)}/10 · {row.get('perfil_forca', 'Notoriedade')}</div>"
+            f"</div>"
         )
 
 ranking_html.append("</div>")
 st.markdown("".join(ranking_html), unsafe_allow_html=True)
 
-chart_base = build_daily_chart_summary(chart_df)
-chart_base["dia_curto"] = chart_base["dia_semana"].apply(short_weekday_pt)
-chart_base["data_curta"] = pd.to_datetime(chart_base["data"]).dt.strftime("%d/%m")
-chart_base["artist_label"] = chart_base["cabeca_cartaz"].apply(lambda x: abbreviate_label(x, max_len=14))
-chart_base["x_label"] = chart_base["dia_curto"] + " " + chart_base["data_curta"]
+# ── Bloco dias ordenado por calor ────────────────────────────────────────────
 
-fig = go.Figure()
-
-fig.add_trace(
-    go.Scatter(
-        x=chart_base["x_label"],
-        y=chart_base["score"],
-        mode="lines+markers+text",
-        text=chart_base["artist_label"],
-        textposition="top center",
-        textfont=dict(size=11, color=COLORS["text"]),
-        line=dict(color=COLORS["accent"], width=3.5, shape="spline", smoothing=0.45),
-        marker=dict(
-            size=11,
-            color=COLORS["accent"],
-            line=dict(color=COLORS["surface"], width=2),
-        ),
-        customdata=chart_base[["local", "cabeca_cartaz", "perfil_forca", "data_curta"]],
-        hovertemplate=(
-            "<b>%{customdata[3]}</b><br>"
-            "Arraial em destaque: %{customdata[0]}<br>"
-            "Cabeça de cartaz: %{customdata[1]}<br>"
-            "Perfil dominante: %{customdata[2]}<br>"
-            "Score: %{y:.1f}/10<br>"
-            "<extra></extra>"
-        ),
-        cliponaxis=False,
-    )
+st.markdown('<div class="section-band">', unsafe_allow_html=True)
+st.markdown(
+    '<div class="section-head">'
+    '<div class="section-label">Onde começa a festa</div>'
+    '<div class="section-copy">Os dias abaixo já estão ordenados pelo calor do cartaz, não pela ordem cronológica.</div>'
+    '</div>',
+    unsafe_allow_html=True,
 )
+st.markdown('<div class="section-grid-4">', unsafe_allow_html=True)
 
+for idx, summary in enumerate(day_summaries):
+    is_top_day = idx == 0
+    span = "span-2" if is_top_day else "span-1"
+    card_class = "card-strong day-heat-hero" if is_top_day else "card"
+    extra_note = "Dia mais forte da janela ativa" if is_top_day else f"{summary['relative_label']} · {summary['mood']}"
+    title = f"{format_pt_date(summary['date'])} · {summary['day_name']}"
+    copy = f"{summary['total']} entradas distribuídas por {summary['arraiais']} arraiais."
+
+    if is_top_day:
+        st.markdown(f"""
+            <div class="{card_class} {span}">
+              <div class="day-order-note">{extra_note}</div>
+              <div class="card-kicker">{summary['relative_label']} · {summary['mood']}</div>
+              <div class="card-title">{title}</div>
+              <div class="card-copy">{copy} O destaque é definido pelo artista mais forte do cartaz, sem somar nomes.</div>
+              <div style="height:.75rem"></div>
+              <div class="pick-card">
+                <div class="card-kicker">Arraial em destaque</div>
+                <div class="card-title">{summary['best_local']}</div>
+                <div class="card-copy">Cabeça de cartaz: {summary['best_headliner']}</div>
+              </div>
+              <div style="height:.75rem"></div>
+              <span class="chip chip-red">{summary['best_events']} eventos</span>
+              <span class="chip chip-olive">{summary['best_profile']}</span>
+              <span class="chip chip-gold">Score {summary['best_score']}/10</span>
+            </div>
+        """, unsafe_allow_html=True)
+    else:
+        st.markdown(f"""
+            <div class="{card_class} {span}">
+              <div class="card-kicker">{extra_note}</div>
+              <div class="card-title">{title}</div>
+              <div class="card-copy">{copy}</div>
+              <div style="height:.5rem"></div>
+              <div class="soft-card">
+                <div class="rank-place">{summary['best_local']}</div>
+                <div class="rank-meta">Cabeça de cartaz: {summary['best_headliner']} · Score {summary['best_score']}/10</div>
+              </div>
+            </div>
+        """, unsafe_allow_html=True)
+
+st.markdown("</div>", unsafe_allow_html=True)
+st.markdown("</div>", unsafe_allow_html=True)
+
+# ── Termómetro da festa ──────────────────────────────────────────────────────
+
+fig = px.bar(
+    daily,
+    x="data_label",
+    y="eventos",
+    color="local",
+    color_discrete_map=color_map,
+    category_orders={"data_label": date_order},
+    title="",
+)
 fig.update_layout(
     paper_bgcolor=COLORS["surface"],
     plot_bgcolor=COLORS["surface"],
     font=dict(color=COLORS["text"], size=12),
-    margin=dict(l=18, r=18, t=70, b=18),
-    xaxis_title="Dia",
-    yaxis_title="Score",
-    height=430,
+    margin=dict(l=18, r=18, t=54, b=12),
+    legend_title_text="Local",
+    xaxis_title="Data",
+    yaxis_title="Eventos",
+    barmode="stack",
+    bargap=0.32,
+    height=360,
+    legend=dict(
+        orientation="h",
+        yanchor="bottom",
+        y=1.02,
+        xanchor="center",
+        x=0.5,
+        font=dict(size=10),
+    ),
 )
-
 fig.update_xaxes(showgrid=False, tickangle=0)
-fig.update_yaxes(
-    range=[0, 10],
-    tickmode="array",
-    tickvals=list(range(0, 11, 2)),
-    gridcolor="rgba(110,75,42,0.18)",
-    zeroline=False,
-)
+fig.update_yaxes(gridcolor="rgba(110,75,42,0.18)", rangemode="tozero")
 
 st.markdown(
-    '<div class="card-strong"><div class="card-kicker">Termómetro da festa</div><div class="card-copy">No máximo aparecem 7 dias, com o cabeça de cartaz de cada dia destacado diretamente no ponto.</div></div>',
+    '<div class="card-strong">'
+    '<div class="card-kicker">Termómetro da festa</div>'
+    '<div class="card-copy">Um mapa rápido da animação para perceber onde a festa ganha força.</div>'
+    '</div>',
     unsafe_allow_html=True,
 )
 st.plotly_chart(fig, use_container_width=True, theme=None, config={"displayModeBar": False})
 
+# ── Roteiro completo ─────────────────────────────────────────────────────────
+
 st.markdown(
-    "<div class='section-label'>O melhor fica para o fim</div>"
-    "<div class='section-copy'>Antes de fechares o roteiro, passa pelo manjerico e abre a tua quadra do dia.</div>",
+    "<div class='section-label'>Roteiro completo</div>"
+    "<div class='section-copy'>No fim tens a lista completa para afinar o roteiro ao teu gosto.</div>",
     unsafe_allow_html=True,
 )
 
-manj_left, manj_mid, manj_right = st.columns([1.2, 1, 1.2])
-with manj_mid:
-    st.markdown(
-        """
-        <div class="hero-manjerico-wrap">
-          <div class="manjerico-shell">
-            <a class="manjerico-link-reset" href="?manjerico=open" target="_self">
-              <div class="manjerico-plant-zone" role="button" aria-label="Ver quadra do manjerico">
-                <span class="manjerico-green-button">Ver quadra</span>
-              </div>
-            </a>
-            <div class="manjerico-pot"></div>
-          </div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+table_view = focus_df[["data", "dia_semana", "local", "artista_evento", "categoria", "feriado"]].rename(
+    columns={
+        "data": "Data",
+        "dia_semana": "Dia",
+        "local": "Local",
+        "artista_evento": "Artista / Evento",
+        "categoria": "Categoria",
+        "feriado": "Feriado",
+    }
+).copy()
+table_view["Data"] = pd.to_datetime(table_view["Data"]).dt.strftime("%d/%m/%Y")
+table_view["Score de Notoriedade"] = focus_df["artist_score"].round(1).values
+table_view["Perfil"] = focus_df["artist_profile_label"].values
+
+st.markdown('<div class="table-wrap">', unsafe_allow_html=True)
+st.dataframe(table_view, use_container_width=True, hide_index=True)
+st.markdown("</div>", unsafe_allow_html=True)
 
 st.markdown("</div>", unsafe_allow_html=True)
+
+csv = table_view.to_csv(index=False).encode("utf-8-sig")
+st.download_button(
+    "⬇️ Exportar roteiro atual (CSV)",
+    data=csv,
+    file_name="santos_populares_proximos_dias.csv",
+    mime="text/csv",
+)
