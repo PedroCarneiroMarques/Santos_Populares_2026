@@ -1499,7 +1499,7 @@ st.markdown(
 
 st.markdown(
     "<div class='section-label'>Pensamento do dia</div>"
-    "<div class='section-copy'>Clica no manjerico e abre a tua quadra do dia.</div>",
+    "<div class='section-copy'>Clica no manjerico!.</div>",
     unsafe_allow_html=True,
 )
 
