@@ -562,7 +562,7 @@ def inject_css():
         }}
 
         .hero-title {{
-            font-size: clamp(2.2rem, 5.6vw, 4.6rem);
+            font-size: clamp(1.6rem, 4vw, 3.2rem);
             line-height: .95;
             letter-spacing: -.04em;
             font-weight: 900;
