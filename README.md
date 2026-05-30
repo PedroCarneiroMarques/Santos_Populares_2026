@@ -23,7 +23,7 @@ data.py             # Pipeline Excel e agregações
 artists.py          # Perfis de artistas e scoring
 text_utils.py       # Normalização e parsing de texto/datas
 quadras.py          # Lógica das quadras (session state)
-votes.py            # Sistema de votação (SQLite)
+voting.py           # Sistema de votação diária (SQLite)
 components.py       # Templates HTML da interface
 charts.py           # Gráfico Plotly
 styles.py           # Injeção de CSS
@@ -55,7 +55,7 @@ streamlit run app.py
 | `data.build_heat_order_summaries` | Dias ordenados por força do cartaz |
 | `artists.get_artist_score` | Score 0–10 com cache |
 | `components.*` | HTML reutilizável (hero, ranking, cards) |
-| `votes.*` | Registo e agregação de votos (SQLite em `data/votes.db`) |
+| `voting.*` | Registo e agregação de votos diários (SQLite em `data/votes.db`) |
 
 ## Notas de manutenção
 

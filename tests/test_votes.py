@@ -4,7 +4,7 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
-from votes import (
+from voting import (
     cast_vote,
     clear_vote,
     get_user_vote,

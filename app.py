@@ -29,13 +29,13 @@ from data import (
 from quadras import get_hero_quadra, init_manjerico_quadra, next_manjerico_quadra, render_quadra_html
 from styles import inject_css
 from text_utils import coerce_date_range, format_pt_date
-from votes import (
+from voting import (
     cast_vote,
     clear_vote,
     get_user_vote,
     get_vote_counts,
     get_vote_leaderboard,
-    today,
+    today as vote_today,
     total_votes,
 )
 
@@ -115,7 +115,7 @@ init_manjerico_quadra()
 hero_html = render_quadra_html(get_hero_quadra())
 fig = build_festival_chart(build_daily_chart_summary(chart_df))
 hot_day = day_summaries[0]
-vote_day = today()
+vote_day = vote_today()
 votes_hoje = get_vote_counts(vote_day)
 user_vote = get_user_vote(vote_day)
 arraiais_hoje = sorted(df.loc[df["data"] == vote_day, "local"].dropna().unique())
