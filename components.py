@@ -2,18 +2,22 @@ from text_utils import format_pt_date
 
 
 def section(label: str, copy: str) -> str:
-    return f"<div class='section-label'>{label}</div><div class='section-copy'>{copy}</div>"
+    return (
+        _garland(flags=20, mini=True)
+        + f"<div class='section-label'>{label}</div><div class='section-copy'>{copy}</div>"
+    )
 
 
 _GARLAND_COLORS = ("#E53935", "#F4B400", "#43A047", "#1E88E5", "#FB8C00")
 
 
-def _garland(flags: int = 48) -> str:
+def _garland(flags: int = 48, mini: bool = False) -> str:
     spans = "".join(
         f'<span class="festa-flag" style="border-top-color:{_GARLAND_COLORS[i % len(_GARLAND_COLORS)]}"></span>'
         for i in range(flags)
     )
-    return f'<div class="festa-garland" aria-hidden="true">{spans}</div>'
+    cls = "festa-garland festa-garland-mini" if mini else "festa-garland"
+    return f'<div class="{cls}" aria-hidden="true">{spans}</div>'
 
 
 def hero(quadra_html: str) -> str:
