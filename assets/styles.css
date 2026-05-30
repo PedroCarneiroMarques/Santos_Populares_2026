@@ -1,6 +1,18 @@
 html, body, .stApp {
-            background: var(--bg);
+            background:
+                radial-gradient(150% 110% at 50% -8%, #FAF1DA 0%, var(--bg) 58%);
             color: var(--text);
+        }
+
+        .hero-title-line,
+        .eyebrow, .section-label, .card-kicker,
+        .metric-value, .card-title, .top-rank-title,
+        .top-rank-badge, .day-order-note, .metric-label {
+            font-family: 'Fredoka', system-ui, -apple-system, sans-serif;
+        }
+
+        .hero-copy, .quadra-text {
+            font-family: 'Caveat', 'Segoe Print', cursive;
         }
 
         .block-container {
@@ -103,9 +115,64 @@ html, body, .stApp {
 
         .hero {
             border-radius: 22px;
-            padding: 1.35rem 1.1rem 1.2rem 1.1rem;
+            padding: 1.1rem 1.1rem 1.3rem 1.1rem;
             margin-bottom: .85rem;
             text-align: center;
+            background:
+                radial-gradient(120% 130% at 50% -20%, #FFFBF1 0%, var(--surface) 52%, #FBEFD3 100%);
+            border-color: var(--border-strong);
+            position: relative;
+        }
+
+        .festa-garland {
+            display: flex;
+            flex-wrap: nowrap;
+            justify-content: center;
+            align-items: flex-start;
+            gap: 7px;
+            width: 100%;
+            height: 30px;
+            margin: 0 0 .75rem 0;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .festa-garland::before {
+            content: "";
+            position: absolute;
+            top: 3px;
+            left: 2%;
+            right: 2%;
+            height: 2px;
+            border-radius: 2px;
+            background: linear-gradient(90deg, transparent, rgba(62,38,21,.42) 7%, rgba(62,38,21,.42) 93%, transparent);
+        }
+
+        .festa-flag {
+            flex: 0 0 auto;
+            width: 0;
+            height: 0;
+            border-left: 11px solid transparent;
+            border-right: 11px solid transparent;
+            border-top: 20px solid #E53935;
+            margin-top: 3px;
+            filter: drop-shadow(0 2px 1.5px rgba(92,54,18,.20));
+            transform-origin: top center;
+            animation: festa-flag-sway 3.2s ease-in-out infinite;
+        }
+
+        .festa-flag:nth-child(2n) { animation-delay: -.6s; }
+        .festa-flag:nth-child(3n) { animation-delay: -1.2s; }
+        .festa-flag:nth-child(5n) { animation-delay: -1.9s; }
+        .festa-flag:nth-child(7n) { animation-delay: -2.5s; }
+
+        @keyframes festa-flag-sway {
+            0%, 100% { transform: rotate(-6deg); }
+            50% { transform: rotate(6deg); }
+        }
+
+        .hero-title-line {
+            text-shadow: 0 2px 0 rgba(255,255,255,.55), 0 3px 6px rgba(92,54,18,.10);
         }
 
         .section-band {
@@ -182,6 +249,9 @@ html, body, .stApp {
             max-width: min(42ch, 92%);
             margin: 0 auto .9rem auto;
             text-align: center;
+            font-size: 1.42rem;
+            line-height: 1.32;
+            color: var(--muted);
         }
 
         .hero-copy a {
@@ -538,6 +608,79 @@ html, body, .stApp {
             text-transform: uppercase;
             letter-spacing: .06em;
             margin-bottom: .35rem;
+        }
+
+        .metric-card,
+        .card,
+        .card-strong,
+        .soft-card,
+        .pick-card {
+            transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+        }
+
+        .metric-card:hover,
+        .card:hover,
+        .card-strong:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 16px 32px rgba(92,54,18,.20);
+            border-color: var(--border-strong);
+        }
+
+        .chip {
+            transition: transform .14s ease;
+        }
+
+        .chip:hover {
+            transform: translateY(-1px) scale(1.04);
+        }
+
+        .manjerico-plant-zone {
+            animation: manjerico-bob 4.5s ease-in-out infinite;
+        }
+
+        @keyframes manjerico-bob {
+            0%, 100% { transform: translateY(0) rotate(-1deg); }
+            50% { transform: translateY(-4px) rotate(1deg); }
+        }
+
+        .top-rank-hero {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .top-rank-hero::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -60%;
+            width: 45%;
+            height: 100%;
+            background: linear-gradient(105deg, transparent, rgba(255,255,255,.55), transparent);
+            transform: skewX(-18deg);
+            animation: top-rank-sheen 5.5s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        @keyframes top-rank-sheen {
+            0%, 72% { left: -60%; }
+            100% { left: 130%; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .festa-flag,
+            .manjerico-plant-zone,
+            .top-rank-hero::after {
+                animation: none !important;
+            }
+
+            .metric-card,
+            .card,
+            .card-strong,
+            .soft-card,
+            .pick-card,
+            .chip {
+                transition: none !important;
+            }
         }
 
         @media (max-width: 1100px) {

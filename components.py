@@ -5,6 +5,17 @@ def section(label: str, copy: str) -> str:
     return f"<div class='section-label'>{label}</div><div class='section-copy'>{copy}</div>"
 
 
+_GARLAND_COLORS = ("#E53935", "#F4B400", "#43A047", "#1E88E5", "#FB8C00")
+
+
+def _garland(flags: int = 48) -> str:
+    spans = "".join(
+        f'<span class="festa-flag" style="border-top-color:{_GARLAND_COLORS[i % len(_GARLAND_COLORS)]}"></span>'
+        for i in range(flags)
+    )
+    return f'<div class="festa-garland" aria-hidden="true">{spans}</div>'
+
+
 def hero(quadra_html: str) -> str:
     title_lines = (
         "Guia Oficial das Festas de Lisboa",
@@ -16,6 +27,7 @@ def hero(quadra_html: str) -> str:
     )
     return f"""
     <div class="hero">
+      {_garland()}
       <div class="eyebrow">🇵🇹💃🎉 Santos Populares 2026 💃🎉🇵🇹</div>
       <div class="hero-title">{title_html}</div>
       <div class="hero-copy">{quadra_html}</div>
@@ -153,6 +165,6 @@ def manjerico_dialog_html(quadra_html: str) -> str:
     <div style="padding:.25rem .15rem;">
       <div style="font-size:.78rem; color:#C62828; font-weight:900; text-transform:uppercase; letter-spacing:.06em; margin-bottom:.6rem;">Bilhete do manjerico</div>
       <div style="background:#F4E24F; border:1px solid #CBB53A; border-radius:16px; padding:1rem .95rem; box-shadow:0 8px 20px rgba(92,54,18,.10);">
-        <div style="font-size:.94rem; line-height:1.6; color:#3E2615; font-weight:700;">{quadra_html}</div>
+        <div class="quadra-text" style="font-size:1.5rem; line-height:1.3; color:#3E2615; font-weight:700;">{quadra_html}</div>
       </div>
     </div>"""
