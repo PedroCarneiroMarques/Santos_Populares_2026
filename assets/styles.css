@@ -402,12 +402,27 @@ html, body, .stApp {
             margin-bottom: .85rem;
         }
 
+        .vote-field-label {
+            display: block;
+            color: #000000;
+            font-weight: 700;
+            font-size: .88rem;
+            margin-bottom: .35rem;
+        }
+
         div[data-testid="stVerticalBlockBorderWrapper"] [data-testid="stWidgetLabel"],
         div[data-testid="stVerticalBlockBorderWrapper"] [data-testid="stWidgetLabel"] p,
         div[data-testid="stVerticalBlockBorderWrapper"] [data-testid="stWidgetLabel"] span {
             color: #000000 !important;
+            -webkit-text-fill-color: #000000 !important;
             font-weight: 700 !important;
             opacity: 1 !important;
+        }
+
+        div[data-testid="stVerticalBlockBorderWrapper"] [data-testid="stSelectbox"] label,
+        div[data-testid="stVerticalBlockBorderWrapper"] [data-testid="stSelectbox"] label p {
+            color: #000000 !important;
+            -webkit-text-fill-color: #000000 !important;
         }
 
         .vote-section-divider {

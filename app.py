@@ -172,7 +172,13 @@ if arraiais_hoje:
 
     with st.container(border=True):
         vote_index = arraiais_hoje.index(user_vote) if user_vote in arraiais_hoje else 0
-        escolha = st.selectbox("Arraial preferido", arraiais_hoje, index=vote_index)
+        st.markdown("<label class='vote-field-label'>Arraial preferido</label>", unsafe_allow_html=True)
+        escolha = st.selectbox(
+            "Arraial preferido",
+            arraiais_hoje,
+            index=vote_index,
+            label_visibility="collapsed",
+        )
         btn_a, btn_b = st.columns(2)
         if btn_a.button("Confirmar voto", type="primary", use_container_width=True):
             cast_vote(escolha, vote_day)
