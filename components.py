@@ -10,7 +10,10 @@ def hero(quadra_html: str) -> str:
         "Guia Oficial das Festas de Lisboa",
         "para o (B)enfica(B)eer(C)lub",
     )
-    title_html = "".join(f'<span class="hero-title-line">{line}</span>' for line in title_lines)
+    title_html = "".join(
+        f'<span class="hero-title-line" style="display:block">{line}</span>'
+        for line in title_lines
+    )
     return f"""
     <div class="hero">
       <div class="eyebrow">🇵🇹💃🎉 Santos Populares 2026 💃🎉🇵🇹</div>
