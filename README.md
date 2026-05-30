@@ -11,7 +11,7 @@ Repositório: [PedroCarneiroMarques/Santos_Populares_2026](https://github.com/Pe
 - Resumo diário por arraial com cabeça de cartaz mais forte (sem somar nomes do lineup).
 - Termómetro da festa com até 7 dias e artista destacado em cada ponto do gráfico.
 - Manjerico interativo com quadras em diálogo dedicado.
-- Votação comunitária: cada visitante escolhe o arraial preferido (um voto por sessão, alterável) com ranking agregado.
+- Votação comunitária: cada visitante escolhe o arraial preferido (um voto por dia, alterável) com ranking diário agregado.
 - Cards diários ordenados por calor do cartaz, não por cronologia.
 
 ## Estrutura do projeto
