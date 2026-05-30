@@ -33,7 +33,7 @@ def _sardine(flip: bool = False) -> str:
 
 
 def festa_footer() -> str:
-    shoal = "".join(_sardine(flip=bool(i % 2)) for i in range(5))
+    shoal = "".join(_sardine(flip=bool(i % 2)) for i in range(14))
     return f"""
     <div class="festa-footer">
       {_garland()}

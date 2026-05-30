@@ -213,10 +213,12 @@
 
         .festa-sardines {
             display: flex;
-            justify-content: center;
+            justify-content: space-between;
             align-items: center;
-            flex-wrap: wrap;
-            gap: .85rem;
+            flex-wrap: nowrap;
+            gap: .5rem;
+            width: 100%;
+            overflow: hidden;
             margin: .55rem 0 .85rem 0;
         }
 
@@ -883,5 +885,15 @@
             .soft-card,
             .pick-card {
                 border-radius: 16px;
+            }
+
+            .festa-sardines {
+                justify-content: center;
+                gap: .9rem;
+            }
+
+            .festa-sardine {
+                width: 52px;
+                height: 28px;
             }
         }
