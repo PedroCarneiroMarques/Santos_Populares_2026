@@ -1,4 +1,3 @@
-from config import PAGE_TITLE
 from text_utils import format_pt_date
 
 
@@ -7,10 +6,15 @@ def section(label: str, copy: str) -> str:
 
 
 def hero(quadra_html: str) -> str:
+    title_lines = (
+        "Guia Oficial das Festas de Lisboa",
+        "para o (B)enfica(B)eer(C)lub",
+    )
+    title_html = "".join(f'<span class="hero-title-line">{line}</span>' for line in title_lines)
     return f"""
     <div class="hero">
       <div class="eyebrow">🇵🇹💃🎉 Santos Populares 2026 💃🎉🇵🇹</div>
-      <div class="hero-title">{PAGE_TITLE}</div>
+      <div class="hero-title">{title_html}</div>
       <div class="hero-copy">{quadra_html}</div>
     </div>"""
 

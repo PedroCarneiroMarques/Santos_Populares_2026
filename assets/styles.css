@@ -147,13 +147,29 @@ html, body, .stApp {
         }
 
         .hero-title {
-            font-size: clamp(1.6rem, 4vw, 3.2rem);
-            line-height: .95;
-            letter-spacing: -.04em;
-            font-weight: 900;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: .2rem;
+            width: min(920px, 100%);
             margin: 0 auto .7rem auto;
-            max-width: 14ch;
+            text-align: center;
+        }
+
+        .hero-title-line {
+            display: block;
+            width: 100%;
+            font-size: clamp(1.55rem, 2.8vw + 0.65rem, 3.15rem);
+            line-height: 1.08;
+            letter-spacing: 0.06em;
+            word-spacing: 0.12em;
+            font-weight: 900;
             text-wrap: balance;
+        }
+
+        .hero-title-line:last-child {
+            letter-spacing: 0.08em;
+            word-spacing: 0.14em;
         }
 
         .hero-copy, .section-copy, .card-copy, .metric-note, .rank-meta {
@@ -163,7 +179,7 @@ html, body, .stApp {
         }
 
         .hero-copy {
-            max-width: 36ch;
+            max-width: min(42ch, 92%);
             margin: 0 auto .9rem auto;
             text-align: center;
         }
@@ -536,6 +552,12 @@ html, body, .stApp {
                 padding: .7rem .85rem 1rem .85rem;
             }
 
+            .hero-title-line {
+                font-size: clamp(1.4rem, 4.2vw + 0.4rem, 2.35rem);
+                letter-spacing: 0.045em;
+                word-spacing: 0.08em;
+            }
+
             .metric-grid,
             .section-grid-4 {
                 grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -547,11 +569,31 @@ html, body, .stApp {
         }
 
         @media (max-width: 768px) {
+            .hero {
+                padding: 1.1rem .85rem 1rem .85rem;
+            }
+
             .hero-title {
-                max-width: 14ch;
-                font-size: 2.35rem;
-                margin-left: auto;
-                margin-right: auto;
+                width: 100%;
+                gap: .28rem;
+            }
+
+            .hero-title-line {
+                font-size: clamp(1.28rem, 5.8vw + 0.35rem, 1.85rem);
+                line-height: 1.14;
+                letter-spacing: 0.035em;
+                word-spacing: 0.06em;
+                padding: 0 .15rem;
+            }
+
+            .hero-title-line:last-child {
+                letter-spacing: 0.05em;
+                word-spacing: 0.08em;
+            }
+
+            .hero-copy {
+                max-width: 100%;
+                font-size: .88rem;
             }
 
             .metric-grid,
