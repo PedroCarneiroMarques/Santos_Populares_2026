@@ -58,7 +58,7 @@ def ranking(top_options, vote_counts: dict | None = None) -> str:
     parts = [
         '<div class="card-strong">',
         '<div class="card-kicker">Arraiais mais quentes do dia</div>'
-        '<div class="card-copy">A hierarquia é definida pela maior nota individual de notoriedade do dia. Os votos da comunidade aparecem ao lado.</div>',
+        '<div class="card-copy">A hierarquia soma a notoriedade dos artistas únicos do cartaz (máx. 10). O cabeça de cartaz continua a ser o nome mais forte.</div>',
     ]
     if top_options.empty:
         parts.append("</div>")
@@ -116,7 +116,7 @@ def day_card(summary: dict, featured: bool, vote_counts: dict | None = None) -> 
           <div class="day-order-note">Dia mais forte da janela ativa</div>
           <div class="card-kicker">{summary['relative_label']} · {summary['mood']}</div>
           <div class="card-title">{title}</div>
-          <div class="card-copy">{copy} O destaque é definido pelo artista mais forte do cartaz, sem somar nomes.</div>
+          <div class="card-copy">{copy} O score acumula artistas únicos do cartaz até 10; o destaque nominal é o cabeça de cartaz.</div>
           <div style="height:.75rem"></div>
           <div class="pick-card">
             <div class="card-kicker">Arraial em destaque</div>

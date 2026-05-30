@@ -4,7 +4,7 @@ from typing import List, Optional
 import pandas as pd
 import streamlit as st
 
-from artists import classify_event, get_artist_score, get_headliner_name, get_headliner_profile
+from artists import accumulate_arraial_score, classify_event, get_artist_score, get_headliner_name, get_headliner_profile
 from config import DATA_PATHS, DIAS_SEMANA_PT
 from text_utils import (
     clean_display_text,
@@ -101,15 +101,19 @@ def summarize_options(day_df: pd.DataFrame) -> pd.DataFrame:
 
     grouped = (
         day_df.groupby("local", sort=False)
-        .agg(eventos=("artista_evento", "count"), atos_unicos=("artista_evento", "nunique"), score_notoriedade=("artist_score", "max"))
+        .agg(eventos=("artista_evento", "count"), atos_unicos=("artista_evento", "nunique"))
         .reset_index()
     )
     acts = day_df.groupby("local", sort=False)["artista_evento"].apply(_unique_top_acts).reset_index(name="top_atos")
-    grouped = grouped.merge(acts, on="local")
+    scores = (
+        day_df.groupby("local", sort=False)["artista_evento"]
+        .apply(accumulate_arraial_score)
+        .reset_index(name="score")
+    )
+    grouped = grouped.merge(acts, on="local").merge(scores, on="local")
     grouped["cabeca_cartaz"] = grouped["top_atos"].map(get_headliner_name)
-    grouped["forca_cartaz"] = grouped["cabeca_cartaz"].map(get_artist_score)
+    grouped["forca_cartaz"] = grouped["score"]
     grouped["perfil_forca"] = grouped["cabeca_cartaz"].map(get_headliner_profile)
-    grouped["score"] = grouped["forca_cartaz"].round(1)
     return grouped.sort_values(["score", "eventos", "atos_unicos"], ascending=False).reset_index(drop=True)
 
 

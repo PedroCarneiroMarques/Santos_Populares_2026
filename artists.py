@@ -1,5 +1,5 @@
 from functools import lru_cache
-from typing import Dict, List
+from typing import Dict, Iterable, List
 
 from text_utils import clean_display_text, normalize_key, normalize_text
 
@@ -97,6 +97,19 @@ def get_artist_score(name: str) -> float:
         + profile["fit_santos"] * 0.20
     )
     return round(min(10.0, max(0.0, score)), 1)
+
+
+def accumulate_arraial_score(acts: Iterable[str]) -> float:
+    """Soma notoriedade de artistas únicos, limitada a 10, para valorizar cartazes completos."""
+    seen: set[str] = set()
+    total = 0.0
+    for act in acts:
+        cleaned = clean_display_text(act)
+        if not cleaned or cleaned in seen:
+            continue
+        seen.add(cleaned)
+        total += get_artist_score(cleaned)
+    return round(min(10.0, total), 1)
 
 
 def get_headliner_name(items: List[str]) -> str:
