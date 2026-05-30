@@ -25,3 +25,7 @@ data/Guia Oficial*/
 
 # Runtime vote storage
 data/votes.db
+
+# Local archives / backups
+Archive.zip
+*.zip
