@@ -33,12 +33,7 @@ def _sardine(flip: bool = False) -> str:
 
 
 def festa_footer() -> str:
-    pieces = []
-    for i in range(5):
-        pieces.append(_sardine(flip=bool(i % 2)))
-        if i == 2:
-            pieces.append("<span class='festa-emoji'>🌿</span>")
-    shoal = "".join(pieces)
+    shoal = "".join(_sardine(flip=bool(i % 2)) for i in range(5))
     return f"""
     <div class="festa-footer">
       {_garland()}
