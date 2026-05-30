@@ -100,7 +100,7 @@ if df_filtered.empty:
 
 anchor_date = get_anchor_date(df_filtered)
 focus_df = slice_date_window(df_filtered, anchor_date, 3)
-chart_df = slice_date_window(df_filtered, anchor_date, 7)
+chart_df = slice_date_window(df_filtered, anchor_date, 5)
 focus_dates = sorted(pd.to_datetime(focus_df["data"].unique()))
 
 if not focus_dates:
@@ -214,7 +214,7 @@ st.markdown(
     + section("🎉 Onde começa a festa", "Os dias abaixo já estão ordenados pelo calor do cartaz, não pela ordem cronológica.")
     + f'<div class="section-grid-4">{day_cards_html}</div></div>'
     + '<div class="card-strong"><div class="card-kicker">Termómetro da festa</div>'
-    '<div class="card-copy">No máximo aparecem 7 dias, com o cabeça de cartaz de cada dia destacado diretamente no ponto.</div></div>'
+    '<div class="card-copy">No máximo aparecem 5 dias, com o cabeça de cartaz de cada dia destacado diretamente no ponto.</div></div>'
     "</div>",
     unsafe_allow_html=True,
 )
