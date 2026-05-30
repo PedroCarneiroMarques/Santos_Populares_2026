@@ -1,5 +1,33 @@
 # Changelog
 
+## 2026-05-30 — Votação diária, identidade festiva e limpeza
+
+### Added
+
+- **Votação comunitária diária**: cada visitante escolhe o arraial preferido (um voto por dia, alterável até à meia-noite) com ranking diário agregado, guardado em SQLite (`data/votes.db`). Módulo `voting.py` + testes `tests/test_voting.py`.
+- **Score acumulado por arraial**: a hierarquia soma a notoriedade dos artistas únicos do cartaz (máx. 10); o cabeça de cartaz continua a ser o nome mais forte.
+- **Identidade visual dos Santos Populares**:
+  - Bandeirinhas de papel (grinalda CSS) no topo do hero e de cada secção principal, com balanço suave.
+  - Tipografia festiva: `Fredoka` nos títulos e `Caveat` (manuscrita) nas quadras, via Google Fonts.
+  - Marca de água subtil de sardinhas e manjerico no fundo da página.
+  - Brilho radial no hero, elevação dos cartões no hover, manjerico a "respirar" e brilho dourado no nº1 do ranking.
+  - Todas as animações respeitam `prefers-reduced-motion`.
+
+### Changed
+
+- Módulo de votação renomeado de `votes` para `voting` (o pacote PyPI `votes` colidia no Streamlit Cloud).
+- CSS injetado em cada rerun e recarregado por `mtime` (corrige UI sem estilo após interações e cache desatualizado).
+- Título do hero em duas linhas equilibradas, sem o limite `14ch`; espaçamento de letras afinado e responsivo (desktop / 980px / 768px).
+- Caminhos baseados em `ROOT_DIR` para funcionar no Streamlit Cloud.
+- Copy: secção "Dica para boa disposição!" e diálogo do manjerico sem repetição ("Manjerico de Santo António" + "Versos para oferecer").
+
+### Removed
+
+- `setup_github.sh` (bootstrap usado uma só vez) e screenshots não referenciados em `images/`.
+- `Archive.zip` deixou de ser versionado; `*.zip` e `.pytest_cache/` ignorados.
+
+---
+
 ## 2026-05-29 — Refactor modular e otimizações
 
 ### Added

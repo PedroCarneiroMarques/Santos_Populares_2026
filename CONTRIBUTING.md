@@ -18,6 +18,9 @@ Este projeto privilegia clareza visual, leitura rápida e decisões orientadas p
 - Manter o nº1 do ranking visualmente destacado (`top-rank-hero`).
 - Confirmar comportamento em desktop e mobile (grelha 4 → 2 → 1 colunas nos breakpoints do CSS).
 - Manter textos e labels em português.
+- Preservar a identidade festiva: grinalda de bandeirinhas (`festa-garland`), fontes `Fredoka`/`Caveat` e marca de água no fundo.
+- Qualquer animação nova tem de ser desativada em `@media (prefers-reduced-motion: reduce)`.
+- Votação: um voto por pessoa por dia (`voting.py`); não reintroduzir o nome `votes` (colide no PyPI/Streamlit Cloud).
 
 ## Boas práticas
 

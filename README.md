@@ -14,10 +14,20 @@ Repositório: [PedroCarneiroMarques/Santos_Populares_2026](https://github.com/Pe
 - Votação comunitária: cada visitante escolhe o arraial preferido (um voto por dia, alterável) com ranking diário agregado.
 - Cards diários ordenados por calor do cartaz, não por cronologia.
 
+## Identidade visual
+
+Inspirada nos Santos Populares de Lisboa, com vida e movimento contidos:
+
+- Bandeirinhas de papel (grinalda CSS) no hero e no topo de cada secção, com balanço suave.
+- Tipografia festiva: `Fredoka` nos títulos e `Caveat` (manuscrita) nas quadras — carregadas via Google Fonts em `styles.py`.
+- Marca de água subtil de sardinhas e manjerico no fundo da página.
+- Micro-interações: elevação dos cartões no hover, manjerico a "respirar", brilho dourado no nº1 do ranking.
+- Todas as animações respeitam `prefers-reduced-motion`; o CSS é responsivo (4 → 2 → 1 colunas).
+
 ## Estrutura do projeto
 
 ```
-app.py              # Entry point Streamlit (~140 linhas)
+app.py              # Entry point Streamlit (~220 linhas)
 config.py           # Cores, constantes e paths
 data.py             # Pipeline Excel e agregações
 artists.py          # Perfis de artistas e scoring
