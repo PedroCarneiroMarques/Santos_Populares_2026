@@ -402,6 +402,14 @@ html, body, .stApp {
             margin-bottom: .85rem;
         }
 
+        div[data-testid="stVerticalBlockBorderWrapper"] [data-testid="stWidgetLabel"],
+        div[data-testid="stVerticalBlockBorderWrapper"] [data-testid="stWidgetLabel"] p,
+        div[data-testid="stVerticalBlockBorderWrapper"] [data-testid="stWidgetLabel"] span {
+            color: #000000 !important;
+            font-weight: 700 !important;
+            opacity: 1 !important;
+        }
+
         .vote-section-divider {
             height: 1px;
             background: var(--border);
