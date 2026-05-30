@@ -1,5 +1,18 @@
 # Changelog
 
+## 2026-05-30 — Filtros interativos
+
+### Added
+
+- Pesquisa por artista / cabeça de cartaz (ignora acentos e maiúsculas).
+- Slider de notoriedade mínima do cartaz (0–10) para focar nos atos mais fortes.
+
+### Changed
+
+- Filtros de Local e Categoria passam a multi-seleção (vários em simultâneo).
+
+---
+
 ## 2026-05-30 — Votação diária, identidade festiva e limpeza
 
 ### Added

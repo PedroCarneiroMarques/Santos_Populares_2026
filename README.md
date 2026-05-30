@@ -53,7 +53,7 @@ streamlit run app.py
 ```
 
 1. Colocar `santos.xlsx` em `data/` (ou na raiz) — ou carregar manualmente pela interface.
-2. Ajustar filtros na sidebar: intervalo, local, categoria e fim de semana.
+2. Ajustar filtros na sidebar: intervalo, pesquisa por artista, local e categoria (multi-seleção), notoriedade mínima do cartaz e fim de semana.
 
 ## Lógica principal
 

@@ -29,7 +29,7 @@ from data import (
 )
 from quadras import get_hero_quadra, init_manjerico_quadra, next_manjerico_quadra, render_quadra_html
 from styles import inject_css
-from text_utils import coerce_date_range, format_pt_date
+from text_utils import coerce_date_range, format_pt_date, normalize_key
 from voting import (
     cast_vote,
     clear_vote,
@@ -81,17 +81,24 @@ date_range = st.sidebar.date_input(
 )
 data_inicio, data_fim = coerce_date_range(date_range, min_date, max_date)
 
-local_sel = st.sidebar.selectbox("Local", ["Todos"] + sorted(df["local"].dropna().unique()))
-categoria_sel = st.sidebar.selectbox("Categoria", ["Todas"] + sorted(df["categoria"].dropna().unique()))
+artista_query = st.sidebar.text_input("🔎 Procurar artista", placeholder="ex: Quim Barreiros")
+locais_sel = st.sidebar.multiselect("Local", sorted(df["local"].dropna().unique()))
+categorias_sel = st.sidebar.multiselect("Categoria", sorted(df["categoria"].dropna().unique()))
+score_min = st.sidebar.slider("🔥 Notoriedade mínima do cartaz", 0, 10, 0, help="Mostra só os atos com score igual ou acima deste valor.")
 weekend_only = st.sidebar.checkbox("Só sexta a domingo")
 
 mask = (df["data"] >= pd.Timestamp(data_inicio)) & (df["data"] <= pd.Timestamp(data_fim))
-if local_sel != "Todos":
-    mask &= df["local"] == local_sel
-if categoria_sel != "Todas":
-    mask &= df["categoria"] == categoria_sel
+if locais_sel:
+    mask &= df["local"].isin(locais_sel)
+if categorias_sel:
+    mask &= df["categoria"].isin(categorias_sel)
+if score_min > 0:
+    mask &= df["artist_score"] >= score_min
 if weekend_only:
     mask &= df["data"].dt.dayofweek >= 4
+if artista_query.strip():
+    needle = normalize_key(artista_query)
+    mask &= df["artista_evento"].map(lambda value: needle in normalize_key(str(value)))
 
 df_filtered = df.loc[mask]
 if df_filtered.empty:
