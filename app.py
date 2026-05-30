@@ -121,7 +121,7 @@ user_vote = get_user_vote(vote_day)
 arraiais_hoje = sorted(df.loc[df["data"] == vote_day, "local"].dropna().unique())
 
 
-@st.dialog("🌿 Quadra do manjerico", width="small")
+@st.dialog("🌿 Manjerico de Santo António", width="small")
 def manjerico_dialog() -> None:
     st.markdown(manjerico_dialog_html(render_quadra_html(st.session_state.get("manjerico_quadra", ""))), unsafe_allow_html=True)
     col_a, col_b = st.columns(2)
@@ -146,7 +146,7 @@ day_cards_html = "".join(
 st.markdown(
     '<div class="content-shell">'
     + hero(hero_html)
-    + section("O melhor fica para o fim", "Antes de fechares o roteiro, passa pelo manjerico e abre a tua quadra do dia."),
+    + section("Dica para boa disposição!", "Antes de fechares o roteiro, passa pelo manjerico e abre a tua quadra do dia."),
     unsafe_allow_html=True,
 )
 

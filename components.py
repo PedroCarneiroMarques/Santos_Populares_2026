@@ -167,7 +167,7 @@ def day_card(summary: dict, featured: bool, vote_counts: dict | None = None) -> 
 def manjerico_dialog_html(quadra_html: str) -> str:
     return f"""
     <div style="padding:.25rem .15rem;">
-      <div style="font-size:.78rem; color:#C62828; font-weight:900; text-transform:uppercase; letter-spacing:.06em; margin-bottom:.6rem;">Bilhete do manjerico</div>
+      <div style="font-size:.78rem; color:#C62828; font-weight:900; text-transform:uppercase; letter-spacing:.06em; margin-bottom:.6rem;">Versos para oferecer</div>
       <div style="background:#F4E24F; border:1px solid #CBB53A; border-radius:16px; padding:1rem .95rem; box-shadow:0 8px 20px rgba(92,54,18,.10);">
         <div class="quadra-text" style="font-size:1.5rem; line-height:1.3; color:#3E2615; font-weight:700;">{quadra_html}</div>
       </div>
