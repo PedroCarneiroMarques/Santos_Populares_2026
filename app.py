@@ -10,6 +10,7 @@ from charts import build_festival_chart
 from components import (
     MANJERICO_HTML,
     day_card,
+    festa_footer,
     hero,
     manjerico_dialog_html,
     metric_grid,
@@ -146,7 +147,7 @@ day_cards_html = "".join(
 st.markdown(
     '<div class="content-shell">'
     + hero(hero_html)
-    + section("Dica para boa disposição!", "Antes de fechares o roteiro, passa pelo manjerico e abre a tua quadra do dia."),
+    + section("🌿 Dica para boa disposição!", "Antes de fechares o roteiro, passa pelo manjerico e abre a tua quadra do dia."),
     unsafe_allow_html=True,
 )
 
@@ -154,7 +155,7 @@ _, manj_col, _ = st.columns([1.2, 1, 1.2])
 manj_col.markdown(MANJERICO_HTML, unsafe_allow_html=True)
 
 st.markdown(
-    section("Entrada a matar", "Um olhar rápido para entrares no ritmo da festa sem perder tempo.")
+    section("🔥 Entrada a matar", "Um olhar rápido para entrares no ritmo da festa sem perder tempo.")
     + metric_grid(len(focus_dates), len(focus_df), focus_df["local"].nunique(), hot_day)
     + ranking(hot_day["options"].head(5), get_vote_counts(hot_day["date"])),
     unsafe_allow_html=True,
@@ -163,7 +164,7 @@ st.markdown(
 if arraiais_hoje:
     st.markdown(
         section(
-            "Vota no teu arraial",
+            "💃 Vota no teu arraial",
             f"Votação de hoje ({format_pt_date(vote_day)}): escolhe o arraial preferido. "
             "Cada pessoa tem um voto por dia — podes mudar até à meia-noite.",
         ),
@@ -202,7 +203,7 @@ if arraiais_hoje:
 else:
     st.markdown(
         section(
-            "Vota no teu arraial",
+            "💃 Vota no teu arraial",
             f"Hoje ({format_pt_date(vote_day)}) não há arraiais no cartaz — a votação diária reabre no próximo dia de festa.",
         ),
         unsafe_allow_html=True,
@@ -210,7 +211,7 @@ else:
 
 st.markdown(
     '<div class="section-band"><div class="section-head">'
-    + section("Onde começa a festa", "Os dias abaixo já estão ordenados pelo calor do cartaz, não pela ordem cronológica.")
+    + section("🎉 Onde começa a festa", "Os dias abaixo já estão ordenados pelo calor do cartaz, não pela ordem cronológica.")
     + f'<div class="section-grid-4">{day_cards_html}</div></div>'
     + '<div class="card-strong"><div class="card-kicker">Termómetro da festa</div>'
     '<div class="card-copy">No máximo aparecem 7 dias, com o cabeça de cartaz de cada dia destacado diretamente no ponto.</div></div>'
@@ -218,3 +219,5 @@ st.markdown(
     unsafe_allow_html=True,
 )
 st.plotly_chart(fig, use_container_width=True, theme=None, config={"displayModeBar": False})
+
+st.markdown('<div class="content-shell">' + festa_footer() + "</div>", unsafe_allow_html=True)

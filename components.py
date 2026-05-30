@@ -20,6 +20,34 @@ def _garland(flags: int = 48, mini: bool = False) -> str:
     return f'<div class="{cls}" aria-hidden="true">{spans}</div>'
 
 
+def _sardine(flip: bool = False) -> str:
+    cls = "festa-sardine flip" if flip else "festa-sardine"
+    return f"""<span class="festa-sardine-wrap" aria-hidden="true"><svg class="{cls}" viewBox="-2 -6 80 40" width="64" height="34">
+      <path class="sard-body" d="M2,16 C2,16 8,4 22,4 C40,4 52,12 60,16 C52,20 40,28 22,28 C8,28 2,16 2,16 Z"/>
+      <path class="sard-fin" d="M60,16 L74,7 L69,16 L74,25 Z"/>
+      <path class="sard-fin" d="M26,5 L40,-2 L45,8 Z"/>
+      <path class="sard-gill" d="M20,6 C17,12 17,20 20,26" fill="none"/>
+      <circle cx="13" cy="13" r="3" fill="#FFFFFF"/>
+      <circle cx="12.5" cy="13" r="1.4" fill="#3E2615"/>
+    </svg></span>"""
+
+
+def festa_footer() -> str:
+    pieces = []
+    for i in range(5):
+        pieces.append(_sardine(flip=bool(i % 2)))
+        if i == 2:
+            pieces.append("<span class='festa-emoji'>🌿</span>")
+    shoal = "".join(pieces)
+    return f"""
+    <div class="festa-footer">
+      {_garland()}
+      <div class="festa-sardines">{shoal}</div>
+      <div class="festa-footer-title">Boas Festas de Lisboa! 🎉</div>
+      <div class="festa-footer-copy">Que não falte sardinha na brasa, manjerico à janela e muita folia pela noite dentro.</div>
+    </div>"""
+
+
 def hero(quadra_html: str) -> str:
     title_lines = (
         "Guia Oficial das Festas de Lisboa",
