@@ -81,8 +81,6 @@ date_range = st.sidebar.date_input(
 )
 data_inicio, data_fim = coerce_date_range(date_range, min_date, max_date)
 
-artistas_opcoes = sorted(df["artista_evento"].dropna().unique())
-artista_sel = st.sidebar.selectbox("🔎 Procurar artista", ["Todos os artistas"] + artistas_opcoes)
 locais_sel = st.sidebar.multiselect("Local", sorted(df["local"].dropna().unique()))
 categorias_sel = st.sidebar.multiselect("Categoria", sorted(df["categoria"].dropna().unique()))
 score_min = st.sidebar.slider("🔥 Notoriedade mínima do cartaz", 0, 10, 0, help="Mostra só os atos com score igual ou acima deste valor.")
@@ -97,8 +95,6 @@ if score_min > 0:
     mask &= df["artist_score"] >= score_min
 if weekend_only:
     mask &= df["data"].dt.dayofweek >= 4
-if artista_sel != "Todos os artistas":
-    mask &= df["artista_evento"] == artista_sel
 
 df_filtered = df.loc[mask]
 if df_filtered.empty:
