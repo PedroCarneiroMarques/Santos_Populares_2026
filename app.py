@@ -129,11 +129,11 @@ arraiais_hoje = sorted(df.loc[df["data"] == vote_day, "local"].dropna().unique()
 def manjerico_dialog() -> None:
     st.markdown(manjerico_dialog_html(render_quadra_html(st.session_state.get("manjerico_quadra", ""))), unsafe_allow_html=True)
     col_a, col_b = st.columns(2)
-    if col_a.button("Outra quadra", key="next_quadra_dialog"):
+    if col_a.button("🌿 Outra quadra", key="next_quadra_dialog", type="primary", use_container_width=True):
         next_manjerico_quadra()
         st.session_state.show_quadra_dialog = True
         st.rerun()
-    if col_b.button("Fechar", key="close_quadra_dialog"):
+    if col_b.button("Fechar", key="close_quadra_dialog", use_container_width=True):
         st.session_state.show_quadra_dialog = False
         st.rerun()
 
