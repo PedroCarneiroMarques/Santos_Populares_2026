@@ -364,108 +364,60 @@
             margin-bottom: .35rem;
         }
 
-        .manjerico-shell {
-            width: 260px;
-            margin: 0 auto;
-            text-align: center;
-        }
-
-        .manjerico-link-reset {
+        .manjerico-link {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            gap: .55rem;
             text-decoration: none !important;
             color: inherit !important;
-            display: inline-block;
+            cursor: pointer;
         }
 
-        .manjerico-plant-zone {
-            width: 178px;
-            height: 178px;
-            margin: 0 auto -8px auto;
-            border-radius: 999px;
-            background:
-                radial-gradient(circle at 30% 30%, #74C365 0 14%, transparent 15%),
-                radial-gradient(circle at 68% 28%, #61BC5A 0 13%, transparent 14%),
-                radial-gradient(circle at 39% 68%, #2F8737 0 13%, transparent 14%),
-                radial-gradient(circle at 70% 69%, #4AAE49 0 13%, transparent 14%),
-                radial-gradient(circle at 50% 50%, #4FAF50 0 52%, #2E7D32 100%);
-            box-shadow:
-                inset 0 10px 18px rgba(255,255,255,.16),
-                inset 0 -14px 20px rgba(18,68,22,.18),
-                0 18px 30px rgba(92,54,18,.12);
-            position: relative;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        .manjerico-img {
+            width: clamp(170px, 42vw, 235px);
+            height: auto;
+            filter: drop-shadow(0 16px 22px rgba(92,54,18,.22));
+            transition: transform .2s ease, filter .2s ease;
+            animation: manjerico-bob 4.5s ease-in-out infinite;
+            transform-origin: bottom center;
         }
 
-        .manjerico-plant-zone::after {
-            content: "";
-            position: absolute;
-            inset: 0;
-            border-radius: 999px;
-            box-shadow: inset 0 0 0 1px rgba(255,255,255,.06);
-            pointer-events: none;
+        .manjerico-link:hover .manjerico-img {
+            transform: translateY(-3px) scale(1.03);
+            filter: drop-shadow(0 20px 26px rgba(92,54,18,.28));
         }
 
-        .manjerico-green-button {
-            position: relative;
-            z-index: 3;
+        .manjerico-cta {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            min-width: 112px;
-            padding: .58rem .95rem;
+            gap: .3rem;
+            padding: .56rem 1.05rem;
             border-radius: 999px;
-            background: linear-gradient(180deg, rgba(123,201,111,.98) 0%, rgba(76,175,80,.98) 45%, rgba(46,125,50,.98) 100%);
+            background: linear-gradient(180deg, #7BC96F 0%, #4CAF50 48%, #2E7D32 100%);
             color: var(--green-zone-text);
             border: 1px solid rgba(255,255,255,.22);
             box-shadow:
-                0 10px 24px rgba(20,70,24,.24),
+                0 10px 22px rgba(20,70,24,.24),
                 inset 0 1px 0 rgba(255,255,255,.18);
-            font-weight: 900;
-            letter-spacing: .02em;
-            font-size: .88rem;
+            font-family: 'Fredoka', system-ui, sans-serif;
+            font-weight: 700;
+            font-size: .9rem;
             line-height: 1;
-            cursor: pointer;
             transition: transform .16s ease, filter .16s ease, box-shadow .16s ease;
-            user-select: none;
-            backdrop-filter: blur(1px);
         }
 
-        .manjerico-green-button:hover {
-            transform: translateY(-1px) scale(1.02);
-            filter: brightness(1.03);
+        .manjerico-link:hover .manjerico-cta {
+            transform: translateY(-1px);
+            filter: brightness(1.04);
             box-shadow:
-                0 14px 28px rgba(20,70,24,.28),
+                0 14px 26px rgba(20,70,24,.3),
                 inset 0 1px 0 rgba(255,255,255,.2);
         }
 
-        .manjerico-green-button:active {
+        .manjerico-link:active .manjerico-cta {
             transform: translateY(0) scale(.99);
-        }
-
-        .manjerico-pot {
-            width: 150px;
-            height: 92px;
-            margin: 0 auto;
-            background: linear-gradient(180deg, #DB9462 0%, #C87A48 55%, #A55E34 100%);
-            border-radius: 0 0 70px 70px / 0 0 52px 52px;
-            border: 1px solid rgba(124,76,39,.35);
-            position: relative;
-            box-shadow: 0 18px 28px rgba(92,54,18,.12);
-        }
-
-        .manjerico-pot::before {
-            content: "";
-            position: absolute;
-            left: 50%;
-            top: -14px;
-            transform: translateX(-50%);
-            width: 166px;
-            height: 24px;
-            background: linear-gradient(180deg, #E3A06E 0%, #C87847 100%);
-            border-radius: 999px;
-            border: 1px solid rgba(124,76,39,.35);
         }
 
         .metric-grid {
@@ -722,10 +674,6 @@
             transform: translateY(-1px) scale(1.04);
         }
 
-        .manjerico-plant-zone {
-            animation: manjerico-bob 4.5s ease-in-out infinite;
-        }
-
         @keyframes manjerico-bob {
             0%, 100% { transform: translateY(0) rotate(-1deg); }
             50% { transform: translateY(-4px) rotate(1deg); }
@@ -756,7 +704,7 @@
 
         @media (prefers-reduced-motion: reduce) {
             .festa-flag,
-            .manjerico-plant-zone,
+            .manjerico-img,
             .top-rank-hero::after,
             .festa-sardine-wrap {
                 animation: none !important;
@@ -842,29 +790,13 @@
                 display: none;
             }
 
-            .manjerico-shell {
-                width: 220px;
+            .manjerico-img {
+                width: clamp(150px, 52vw, 200px);
             }
 
-            .manjerico-plant-zone {
-                width: 156px;
-                height: 156px;
-            }
-
-            .manjerico-green-button {
-                min-width: 100px;
-                font-size: .82rem;
-                padding: .52rem .85rem;
-            }
-
-            .manjerico-pot {
-                width: 132px;
-                height: 82px;
-            }
-
-            .manjerico-pot::before {
-                width: 148px;
-                height: 22px;
+            .manjerico-cta {
+                font-size: .85rem;
+                padding: .5rem .9rem;
             }
 
             .top-rank-grid {

@@ -1,4 +1,14 @@
+import base64
+from functools import lru_cache
+
+from config import ASSETS_DIR
 from text_utils import format_pt_date
+
+
+@lru_cache(maxsize=1)
+def _manjerico_data_uri() -> str:
+    raw = (ASSETS_DIR / "manjerico.png").read_bytes()
+    return "data:image/png;base64," + base64.b64encode(raw).decode("ascii")
 
 
 def section(label: str, copy: str) -> str:
@@ -60,16 +70,12 @@ def hero(quadra_html: str) -> str:
     </div>"""
 
 
-MANJERICO_HTML = """
+MANJERICO_HTML = f"""
 <div class="hero-manjerico-wrap">
-  <div class="manjerico-shell">
-    <a class="manjerico-link-reset" href="?manjerico=open" target="_self">
-      <div class="manjerico-plant-zone" role="button" aria-label="Ver quadra do manjerico">
-        <span class="manjerico-green-button">Ver quadra</span>
-      </div>
-    </a>
-    <div class="manjerico-pot"></div>
-  </div>
+  <a class="manjerico-link" href="?manjerico=open" target="_self" aria-label="Ver a quadra do manjerico">
+    <img class="manjerico-img" src="{_manjerico_data_uri()}" alt="Manjerico de Santo António" />
+    <span class="manjerico-cta">🌿 Ver quadra</span>
+  </a>
 </div>"""
 
 

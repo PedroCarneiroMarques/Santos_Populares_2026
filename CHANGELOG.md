@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-05-31 — Manjerico ilustrado
+
+### Changed
+
+- Manjerico redesenhado: ilustração de manjericão em vaso de barro com cravo e bandeirinha de papel (`assets/manjerico.png`), embebida em base64 e clicável, substituindo a versão em gradientes CSS.
+
+---
+
 ## 2026-05-30 — Filtros interativos
 
 ### Added
