@@ -194,10 +194,10 @@ def day_card(summary: dict, featured: bool, vote_counts: dict | None = None) -> 
 
 def manjerico_dialog_html(quadra_html: str) -> str:
     return f"""
-    <div class="manjerico-dialog">
+    <div style="padding:.1rem .1rem .2rem .1rem;">
       {_garland(flags=16, mini=True)}
-      <div class="manjerico-bilhete-kicker">Versos para oferecer</div>
-      <div class="manjerico-bilhete">
-        <div class="quadra-text">{quadra_html}</div>
+      <div style="font-family:'Fredoka',system-ui,sans-serif; font-size:.76rem; color:#C62828; font-weight:700; text-transform:uppercase; letter-spacing:.08em; margin:.15rem 0 .6rem 0;">Versos para oferecer</div>
+      <div style="position:relative; background:linear-gradient(180deg,#FBEC6A 0%,#F4E24F 100%); border:1px solid #CBB53A; border-radius:16px; padding:1.25rem 1.05rem; box-shadow:0 10px 24px rgba(92,54,18,.18), inset 0 0 0 2px rgba(255,255,255,.42);">
+        <div class="quadra-text" style="font-size:1.55rem; line-height:1.4; color:#3E2615; font-weight:700;">{quadra_html}</div>
       </div>
     </div>"""
