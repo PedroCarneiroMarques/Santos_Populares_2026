@@ -74,7 +74,7 @@ MANJERICO_HTML = f"""
 <div class="hero-manjerico-wrap">
   <a class="manjerico-link" href="?manjerico=open" target="_self" aria-label="Ver a quadra do manjerico">
     <img class="manjerico-img" src="{_manjerico_data_uri()}" alt="Manjerico de Santo António" />
-    <span class="manjerico-cta">🌿 Ver quadra</span>
+    <span class="manjerico-flag">Ver quadra</span>
   </a>
 </div>"""
 
