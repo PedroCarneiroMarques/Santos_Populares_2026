@@ -38,7 +38,6 @@ def festa_footer() -> str:
     <div class="festa-footer">
       {_garland()}
       <div class="festa-sardines">{shoal}</div>
-      <div class="festa-footer-title">Boas Festas de Lisboa! 🎉</div>
       <div class="festa-footer-copy">Que não falte sardinha na brasa, manjerico à janela e muita folia pela noite dentro.</div>
     </div>"""
 
