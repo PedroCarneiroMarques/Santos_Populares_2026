@@ -1,0 +1,19 @@
+---
+description: Commit and push to GitHub after completing user-requested changes
+alwaysApply: true
+---
+
+# GitHub commit e push
+
+Depois de implementar alterações pedidas pelo utilizador neste projeto:
+
+1. Faz **commit** com mensagem clara (1–2 frases, foco no porquê).
+2. Faz **push** para `origin` no branch atual (normalmente `main`), salvo pedido em contrário.
+3. Não assumes que o utilizador vê o site em produção só por alterações locais — o deploy segue o GitHub.
+
+Exceções (não commitar/push sem pedido explícito):
+- Ficheiros com segredos (`.env`, credenciais).
+- O utilizador pedir apenas explorar/rever sem gravar.
+- Não houver alterações para commitar.
+
+Segue o protocolo de segurança git do utilizador (sem `--force` em main, sem alterar git config).

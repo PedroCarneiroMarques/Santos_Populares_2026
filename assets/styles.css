@@ -831,3 +831,26 @@
                 height: 28px;
             }
         }
+
+        html body div[data-testid="stVerticalBlockBorderWrapper"] .stButton button[kind="secondary"],
+        html body div[data-testid="stVerticalBlockBorderWrapper"] button[data-testid="stBaseButton-secondary"],
+        html body .stButton button[kind="secondary"],
+        html body button[data-testid="stBaseButton-secondary"] {
+            background-color: #1A1D29 !important;
+            border-color: #1A1D29 !important;
+        }
+
+        html body div[data-testid="stVerticalBlockBorderWrapper"] .stButton button[kind="secondary"],
+        html body div[data-testid="stVerticalBlockBorderWrapper"] .stButton button[kind="secondary"] *,
+        html body div[data-testid="stVerticalBlockBorderWrapper"] button[data-testid="stBaseButton-secondary"],
+        html body div[data-testid="stVerticalBlockBorderWrapper"] button[data-testid="stBaseButton-secondary"] *,
+        html body .stButton button[kind="secondary"],
+        html body .stButton button[kind="secondary"] *,
+        html body button[data-testid="stBaseButton-secondary"],
+        html body button[data-testid="stBaseButton-secondary"] *,
+        html body button[data-testid="stBaseButton-secondary"]:disabled,
+        html body button[data-testid="stBaseButton-secondary"]:disabled * {
+            color: #FFFFFF !important;
+            -webkit-text-fill-color: #FFFFFF !important;
+            opacity: 1 !important;
+        }

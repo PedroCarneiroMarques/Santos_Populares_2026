@@ -21,6 +21,7 @@ from components import (
 from config import PAGE_TITLE
 from data import (
     build_daily_chart_summary,
+    build_day_summary,
     build_heat_order_summaries,
     get_anchor_date,
     load_and_prepare_data,
@@ -29,7 +30,7 @@ from data import (
 )
 from quadras import get_hero_quadra, init_manjerico_quadra, next_manjerico_quadra, render_quadra_html
 from styles import inject_css
-from text_utils import coerce_date_range, format_pt_date
+from text_utils import format_pt_date
 from voting import (
     cast_vote,
     clear_vote,
@@ -72,14 +73,29 @@ if df.empty:
     st.stop()
 
 st.sidebar.header("Filtros")
-min_date, max_date = df["data"].min().date(), df["data"].max().date()
 anchor_default = get_anchor_date(df)
-default_end = min((anchor_default + pd.Timedelta(days=6)).date(), max_date)
+default_day = anchor_default.date()
+festa_days = sorted(pd.to_datetime(df["data"].dropna().unique()).date)
+if default_day not in festa_days:
+    default_day = festa_days[0]
 
-date_range = st.sidebar.date_input(
-    "Intervalo", value=(anchor_default.date(), default_end), min_value=min_date, max_value=max_date
+# Um único dia (selectbox evita o modo intervalo do date_input).
+_FILTER_VERSION = 3
+if st.session_state.get("_filter_version") != _FILTER_VERSION:
+    st.session_state.filtro_dia = default_day
+    st.session_state._filter_version = _FILTER_VERSION
+elif isinstance(st.session_state.get("filtro_dia"), (tuple, list)):
+    st.session_state.filtro_dia = st.session_state.filtro_dia[0]
+if st.session_state.get("filtro_dia") not in festa_days:
+    st.session_state.filtro_dia = default_day
+
+selected_day = st.sidebar.selectbox(
+    "Dia em cartaz",
+    options=festa_days,
+    format_func=lambda d: pd.Timestamp(d).strftime("%d/%m/%Y"),
+    key="filtro_dia",
 )
-data_inicio, data_fim = coerce_date_range(date_range, min_date, max_date)
+data_inicio = data_fim = selected_day
 
 locais_sel = st.sidebar.multiselect("Local", sorted(df["local"].dropna().unique()))
 categorias_sel = st.sidebar.multiselect("Categoria", sorted(df["categoria"].dropna().unique()))
@@ -123,6 +139,12 @@ vote_day = vote_today()
 votes_hoje = get_vote_counts(vote_day)
 user_vote = get_user_vote(vote_day)
 arraiais_hoje = sorted(df.loc[df["data"] == vote_day, "local"].dropna().unique())
+today_summary = build_day_summary(df_filtered.loc[df_filtered["data"] == vote_day])
+today_ranking = (
+    today_summary.get("options", pd.DataFrame()).head(5)
+    if today_summary
+    else pd.DataFrame()
+)
 
 
 @st.dialog("🌿 Manjerico de Santo António", width="small")
@@ -160,7 +182,7 @@ manj_col.markdown(MANJERICO_HTML, unsafe_allow_html=True)
 st.markdown(
     section("🔥 Entrada a matar", "Um olhar rápido para entrares no ritmo da festa sem perder tempo.")
     + metric_grid(len(focus_dates), len(focus_df), focus_df["local"].nunique(), hot_day)
-    + ranking(hot_day["options"].head(5), get_vote_counts(hot_day["date"])),
+    + ranking(today_ranking, votes_hoje),
     unsafe_allow_html=True,
 )
 

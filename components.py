@@ -109,7 +109,8 @@ def ranking(top_options, vote_counts: dict | None = None) -> str:
     parts = [
         '<div class="card-strong">',
         '<div class="card-kicker">Arraiais mais quentes do dia</div>'
-        '<div class="card-copy">A hierarquia soma a notoriedade dos artistas únicos do cartaz (máx. 10). O cabeça de cartaz continua a ser o nome mais forte.</div>',
+        '<div class="card-copy">A hierarquia soma a notoriedade dos artistas únicos do cartaz (máx. 10). '
+        'Só entram arraiais em cartaz no dia de hoje — nunca agregados de vários dias.</div>',
     ]
     if top_options.empty:
         parts.append("</div>")
