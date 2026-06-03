@@ -9,7 +9,7 @@ Repositório: [PedroCarneiroMarques/Santos_Populares_2026](https://github.com/Pe
 - Leitura automática do Excel com normalização de datas, locais, artistas e categorias.
 - Notoriedade por artista com perfis ponderados (`legado`, `mass_market`, `relevancia_atual`, `fit_santos`).
 - Resumo diário por arraial com cabeça de cartaz mais forte (sem somar nomes do lineup).
-- Termómetro da festa com até 5 dias e artista destacado em cada ponto do gráfico.
+- Termómetro da festa com até 3 dias e artista destacado em cada ponto do gráfico.
 - Manjerico interativo com quadras em diálogo dedicado.
 - Votação comunitária: cada visitante escolhe o arraial preferido (um voto por dia, alterável) com ranking diário agregado.
 - Cards diários ordenados por calor do cartaz, não por cronologia.
