@@ -30,7 +30,7 @@ from data import (
 )
 from quadras import get_hero_quadra, init_manjerico_quadra, next_manjerico_quadra, render_quadra_html
 from styles import inject_css
-from text_utils import format_pt_date
+from text_utils import coerce_date_range, format_pt_date
 from voting import (
     cast_vote,
     clear_vote,
@@ -73,29 +73,31 @@ if df.empty:
     st.stop()
 
 st.sidebar.header("Filtros")
+min_date, max_date = df["data"].min().date(), df["data"].max().date()
 anchor_default = get_anchor_date(df)
-default_day = anchor_default.date()
-festa_days = sorted(pd.to_datetime(df["data"].dropna().unique()).date)
-if default_day not in festa_days:
-    default_day = festa_days[0]
+default_start = anchor_default.date()
+default_end = min((anchor_default + pd.Timedelta(days=2)).date(), max_date)
 
-# Um único dia (selectbox evita o modo intervalo do date_input).
-_FILTER_VERSION = 3
+_FILTER_VERSION = 4
 if st.session_state.get("_filter_version") != _FILTER_VERSION:
-    st.session_state.filtro_dia = default_day
+    st.session_state.filtro_intervalo = (default_start, default_end)
     st.session_state._filter_version = _FILTER_VERSION
-elif isinstance(st.session_state.get("filtro_dia"), (tuple, list)):
-    st.session_state.filtro_dia = st.session_state.filtro_dia[0]
-if st.session_state.get("filtro_dia") not in festa_days:
-    st.session_state.filtro_dia = default_day
+elif not isinstance(st.session_state.get("filtro_intervalo"), tuple):
+    day = st.session_state.get("filtro_intervalo") or default_start
+    if isinstance(day, (tuple, list)):
+        day = day[0]
+    st.session_state.filtro_intervalo = (
+        day,
+        min((pd.Timestamp(day) + pd.Timedelta(days=2)).date(), max_date),
+    )
 
-selected_day = st.sidebar.selectbox(
-    "Dia em cartaz",
-    options=festa_days,
-    format_func=lambda d: pd.Timestamp(d).strftime("%d/%m/%Y"),
-    key="filtro_dia",
+date_range = st.sidebar.date_input(
+    "Intervalo",
+    min_value=min_date,
+    max_value=max_date,
+    key="filtro_intervalo",
 )
-data_inicio = data_fim = selected_day
+data_inicio, data_fim = coerce_date_range(date_range, min_date, max_date)
 
 locais_sel = st.sidebar.multiselect("Local", sorted(df["local"].dropna().unique()))
 categorias_sel = st.sidebar.multiselect("Categoria", sorted(df["categoria"].dropna().unique()))
